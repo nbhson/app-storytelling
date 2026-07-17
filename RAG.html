@@ -1,0 +1,1269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Understanding RAG — Retrieval-Augmented Generation explained through immersive scrollytelling.">
+    <meta property="og:title" content="RAG Explained | Interactive Presentation">
+    <meta property="og:description" content="An immersive scrollytelling journey through Retrieval-Augmented Generation.">
+    <title>RAG Explained | Interactive Presentation</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* ===== RESET & BASE ===== */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            color: #1a1a2e; background: #fff; line-height: 1.6;
+            overflow-x: hidden; -webkit-font-smoothing: antialiased;
+        }
+        a { color: inherit; text-decoration: none; }
+        ul { list-style: none; }
+        img { max-width: 100%; height: auto; display: block; }
+        .row-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+
+        /* ===== HEADER ===== */
+        .site-header {
+            position: sticky; top: 0; z-index: 99999;
+            background: rgba(255,255,255,0.88);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border-bottom: 1px solid rgba(0,0,0,0.06);
+            transition: box-shadow .3s;
+        }
+        .site-header.scrolled { box-shadow: 0 1px 12px rgba(0,0,0,0.06); }
+        .site-header .row-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
+        .logo { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 800; color: #1a1a2e; letter-spacing: -0.02em; }
+        .logo-icon {
+            width: 28px; height: 28px; border-radius: 6px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 13px; font-weight: 800;
+        }
+        .main-nav { display: flex; align-items: center; gap: 4px; }
+        .main-nav a {
+            display: flex; align-items: center; gap: 4px;
+            padding: 8px 14px; font-size: 14px; font-weight: 500; color: #4b5563;
+            border-radius: 8px; transition: all .15s;
+        }
+        .main-nav a:hover { color: #1a1a2e; background: #f3f4f6; }
+        .header-actions { display: flex; align-items: center; gap: 10px; }
+        .btn-ghost {
+            padding: 8px 18px; border: 1px solid #e5e7eb; border-radius: 8px;
+            font-size: 14px; font-weight: 500; color: #374151; background: transparent;
+            cursor: pointer; transition: all .15s; font-family: inherit;
+        }
+        .btn-ghost:hover { border-color: #9ca3af; background: #f9fafb; }
+        .btn-primary {
+            padding: 8px 20px; border-radius: 8px;
+            font-size: 14px; font-weight: 600; color: #fff;
+            background: linear-gradient(135deg, #10b981, #059669); border: none; cursor: pointer;
+            transition: all .15s; font-family: inherit;
+        }
+        .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(16,185,129,0.3); }
+        .mobile-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
+        .mobile-toggle span { display: block; width: 20px; height: 2px; background: #374151; margin: 4px 0; border-radius: 2px; transition: all .2s; }
+        @media (max-width: 768px) {
+            .main-nav, .header-actions .btn-ghost { display: none; }
+            .mobile-toggle { display: block; }
+        }
+
+        /* ===== HERO ===== */
+        .hero {
+            padding: 100px 0 72px; text-align: center; position: relative; overflow: hidden;
+            background: linear-gradient(180deg, #ecfdf5 0%, #d1fae5 40%, #fff 100%);
+        }
+        .hero::before {
+            content: ''; position: absolute; top: -50%; left: -20%; width: 140%; height: 200%;
+            background: radial-gradient(ellipse at 50% 0%, rgba(16,185,129,0.08) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .hero-badge {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 6px 16px; border-radius: 100px;
+            background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.15);
+            font-size: 13px; font-weight: 600; color: #059669; margin-bottom: 28px;
+            animation: fadeUp .6s ease both;
+        }
+        .hero-badge__dot { width: 6px; height: 6px; border-radius: 50%; background: #10b981; animation: pulse-dot 2s ease infinite; }
+        @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: .4; } }
+        .hero h1 {
+            font-size: clamp(44px, 7vw, 76px); font-weight: 800; letter-spacing: -0.035em; line-height: 1.05;
+            margin-bottom: 20px; position: relative;
+            background: linear-gradient(135deg, #1a1a2e 30%, #10b981 100%);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+            animation: fadeUp .6s ease .1s both;
+        }
+        .hero h1 .mono { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+        .hero p {
+            font-size: 18px; color: #6b7280; max-width: 560px; margin: 0 auto 36px;
+            line-height: 1.7; position: relative; animation: fadeUp .6s ease .2s both;
+        }
+        .hero-cta {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 14px 36px; border-radius: 12px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff; font-weight: 600; font-size: 16px; border: none; cursor: pointer;
+            transition: all .25s; font-family: inherit; position: relative;
+            animation: fadeUp .6s ease .3s both;
+        }
+        .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(16,185,129,0.4); }
+        .hero-scroll-hint {
+            margin-top: 56px; display: flex; flex-direction: column; align-items: center; gap: 8px;
+            color: #9ca3af; font-size: 13px; font-weight: 500; position: relative;
+            animation: fadeUp .6s ease .5s both;
+        }
+        .scroll-mouse {
+            width: 24px; height: 38px; border: 2px solid #d1d5db; border-radius: 12px;
+            display: flex; justify-content: center; padding-top: 8px;
+        }
+        .scroll-wheel {
+            width: 3px; height: 8px; background: #9ca3af; border-radius: 3px;
+            animation: scroll-bounce 1.8s ease infinite;
+        }
+        @keyframes scroll-bounce { 0%, 100% { transform: translateY(0); opacity: 1; } 50% { transform: translateY(8px); opacity: .3; } }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ===== SCROLLYTELLING ===== */
+        .scrolly-wrapper { position: relative; display: flex; }
+        .scrolly-canvas {
+            position: sticky; top: 64px;
+            width: 55%; height: calc(100vh - 64px); overflow: hidden;
+            background: #060d1a; flex-shrink: 0;
+        }
+        .canvas-inner { position: relative; width: 100%; height: 100%; }
+
+        /* Particle canvas (full bleed background) */
+        #particleCanvas {
+            position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0;
+        }
+
+        /* Scene layers */
+        .scene-layer {
+            position: absolute; inset: 0; z-index: 1;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+            padding: 40px 32px;
+            opacity: 0; transform: scale(0.92) translateY(20px); filter: blur(8px);
+            transition: opacity .9s cubic-bezier(.4,0,.2,1), transform .9s cubic-bezier(.4,0,.2,1), filter .9s cubic-bezier(.4,0,.2,1);
+            pointer-events: none; will-change: opacity, transform, filter;
+        }
+        .scene-layer.visible { opacity: 1; transform: scale(1) translateY(0); filter: blur(0); pointer-events: auto; }
+        .scene-layer.exit {
+            opacity: 0; transform: scale(1.08) translateY(-20px); filter: blur(6px);
+            transition: opacity .55s cubic-bezier(.4,0,.2,1), transform .55s cubic-bezier(.4,0,.2,1), filter .55s cubic-bezier(.4,0,.2,1);
+        }
+        .scene-layer h3 { font-size: clamp(20px, 3vw, 28px); font-weight: 700; color: rgba(255,255,255,.92); text-align: center; margin-bottom: 8px; letter-spacing: -0.02em; }
+        .scene-layer > p { font-size: clamp(13px, 1.6vw, 16px); color: rgba(255,255,255,.45); text-align: center; max-width: 420px; line-height: 1.6; margin-bottom: 32px; }
+
+        /* ── Scene 0: RAG Overview — Animated Flow ── */
+        .rag-flow-canvas { width: 100%; height: 220px; position: relative; }
+        .rag-node {
+            position: absolute; display: flex; flex-direction: column; align-items: center; gap: 6px;
+            opacity: 0; transform: translateY(20px);
+            transition: all .7s cubic-bezier(.34,1.56,.64,1);
+        }
+        .rag-node.show { opacity: 1; transform: translateY(0); }
+        .rag-node .node-circle {
+            width: 56px; height: 56px; border-radius: 16px;
+            display: flex; align-items: center; justify-content: center; font-size: 24px;
+            border: 1px solid rgba(255,255,255,.1);
+            box-shadow: 0 4px 24px rgba(0,0,0,.3);
+            position: relative;
+        }
+        .rag-node .node-circle::after {
+            content: ''; position: absolute; inset: -4px; border-radius: 20px;
+            border: 1px solid rgba(255,255,255,.05); animation: pulse-ring 3s ease infinite;
+        }
+        @keyframes pulse-ring { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: .3; } }
+        .rag-node .node-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,.7); white-space: nowrap; }
+        .rag-node:nth-child(1) { left: 5%; top: 50%; transform: translateY(20px) translateX(-50%); }
+        .rag-node:nth-child(1).show { transform: translateY(-50%) translateX(0); }
+        .rag-node:nth-child(2) { left: 30%; top: 50%; transform: translateY(20px); }
+        .rag-node:nth-child(2).show { transform: translateY(-50%); }
+        .rag-node:nth-child(3) { left: 55%; top: 50%; transform: translateY(20px); }
+        .rag-node:nth-child(3).show { transform: translateY(-50%); }
+        .rag-node:nth-child(4) { left: 80%; top: 50%; transform: translateY(20px); }
+        .rag-node:nth-child(4).show { transform: translateY(-50%); }
+        .rag-node:nth-child(1) .node-circle { background: linear-gradient(135deg, rgba(16,185,129,.2), rgba(16,185,129,.05)); }
+        .rag-node:nth-child(2) .node-circle { background: linear-gradient(135deg, rgba(59,130,246,.2), rgba(59,130,246,.05)); }
+        .rag-node:nth-child(3) .node-circle { background: linear-gradient(135deg, rgba(139,92,246,.2), rgba(139,92,246,.05)); }
+        .rag-node:nth-child(4) .node-circle { background: linear-gradient(135deg, rgba(245,158,11,.2), rgba(245,158,11,.05)); }
+        .rag-connector {
+            position: absolute; top: 50%; height: 2px; z-index: -1;
+            background: linear-gradient(90deg, rgba(16,185,129,.3), rgba(59,130,246,.3));
+            transform: translateY(-1px);
+        }
+        .rag-connector:nth-child(5) { left: 15%; width: 18%; opacity: 0; transition: opacity .5s ease .4s; }
+        .rag-connector:nth-child(6) { left: 40%; width: 18%; opacity: 0; transition: opacity .5s ease .6s; background: linear-gradient(90deg, rgba(59,130,246,.3), rgba(139,92,246,.3)); }
+        .rag-connector:nth-child(7) { left: 65%; width: 18%; opacity: 0; transition: opacity .5s ease .8s; background: linear-gradient(90deg, rgba(139,92,246,.3), rgba(245,158,11,.3)); }
+        .rag-flow-canvas.show .rag-connector { opacity: 1; }
+        /* Flowing dots on connectors */
+        .flow-dot {
+            position: absolute; width: 6px; height: 6px; border-radius: 50%;
+            background: #10b981; box-shadow: 0 0 12px rgba(16,185,129,.6);
+            top: 50%; transform: translateY(-50%);
+            opacity: 0; transition: opacity .3s;
+        }
+        .rag-flow-canvas.show .flow-dot { opacity: 1; }
+        .flow-dot:nth-child(8) { animation: flowRight 2s ease-in-out infinite; left: 15%; animation-delay: 0s; }
+        .flow-dot:nth-child(9) { animation: flowRight 2s ease-in-out infinite .5s; left: 40%; background: #3b82f6; box-shadow: 0 0 12px rgba(59,130,246,.6); }
+        .flow-dot:nth-child(10) { animation: flowRight 2s ease-in-out infinite 1s; left: 65%; background: #8b5cf6; box-shadow: 0 0 12px rgba(139,92,246,.6); }
+        @keyframes flowRight { 0% { transform: translateY(-50%) translateX(0); } 50% { transform: translateY(-50%) translateX(60px); } 100% { transform: translateY(-50%) translateX(0); } }
+        .counters { display: flex; gap: clamp(24px, 5vw, 48px); justify-content: center; flex-wrap: wrap; margin-top: 8px; }
+        .counter-item { text-align: center; min-width: 80px; }
+        .counter-num { font-size: clamp(36px, 4.5vw, 52px); font-weight: 800; color: #6ee7b7; line-height: 1; letter-spacing: -0.03em; font-family: 'JetBrains Mono', monospace; }
+        .counter-label { font-size: 11px; opacity: .5; margin-top: 6px; text-transform: uppercase; letter-spacing: .05em; color: rgba(255,255,255,.6); }
+
+        /* ── Scene 1: Ingestion Pipeline — Animated ── */
+        .pipeline-viz { width: min(440px, 88vw); position: relative; }
+        .pipeline-canvas-wrap { width: 100%; height: 260px; position: relative; }
+        #pipelineCanvas { width: 100%; height: 100%; }
+
+        /* ── Scene 2: Vector Space — D3 Force ── */
+        #vectorSvg { width: min(440px, 88vw); height: 280px; }
+        #vectorSvg .node-circle { transition: r .4s cubic-bezier(.34,1.56,.64,1); }
+        #vectorSvg text { font-family: 'JetBrains Mono', monospace; pointer-events: none; }
+        .vec-tooltip {
+            position: absolute; padding: 6px 12px; border-radius: 8px;
+            background: rgba(0,0,0,.85); color: #fff; font-size: 11px;
+            font-family: 'JetBrains Mono', monospace; pointer-events: none;
+            opacity: 0; transition: opacity .2s; z-index: 10;
+            backdrop-filter: blur(8px); border: 1px solid rgba(255,255,255,.1);
+        }
+
+        /* ── Scene 3: Similarity Bars ── */
+        .sim-bars-wrap { width: min(420px, 85vw); height: 240px; position: relative; }
+        #simBarsCanvas { width: 100%; height: 100%; }
+
+        /* ── Scene 4: Context Assembly ── */
+        .ctx-viz { width: min(420px, 85vw); height: 240px; position: relative; }
+        #ctxCanvas { width: 100%; height: 100%; }
+
+        /* ── Scene 5: Complete ── */
+        .completion { text-align: center; position: relative; }
+        .checkmark-ring {
+            width: 80px; height: 80px; border-radius: 50%;
+            background: linear-gradient(135deg, #10b981, #059669);
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 20px; transform: scale(0);
+            transition: transform .6s cubic-bezier(.34,1.56,.64,1);
+            box-shadow: 0 0 60px rgba(16,185,129,.4);
+        }
+        .completion.visible .checkmark-ring { transform: scale(1); }
+        .checkmark-ring svg { width: 36px; height: 36px; stroke: #fff; stroke-width: 3; fill: none; stroke-dasharray: 100; stroke-dashoffset: 100; transition: stroke-dashoffset .8s ease .35s; stroke-linecap: round; stroke-linejoin: round; }
+        .completion.visible .checkmark-ring svg { stroke-dashoffset: 0; }
+        .confetti { position: absolute; width: 8px; height: 8px; border-radius: 2px; opacity: 0; }
+        .completion.visible .confetti { animation: confetti-burst .8s ease forwards; }
+        .completion.visible .confetti:nth-child(1) { background: #10b981; animation-delay: .2s; --tx: -50px; --ty: -60px; }
+        .completion.visible .confetti:nth-child(2) { background: #3b82f6; animation-delay: .3s; --tx: 45px; --ty: -55px; }
+        .completion.visible .confetti:nth-child(3) { background: #8b5cf6; animation-delay: .25s; --tx: -40px; --ty: 40px; }
+        .completion.visible .confetti:nth-child(4) { background: #f59e0b; animation-delay: .35s; --tx: 50px; --ty: 35px; }
+        .completion.visible .confetti:nth-child(5) { background: #ef4444; animation-delay: .28s; --tx: -20px; --ty: -70px; }
+        .completion.visible .confetti:nth-child(6) { background: #06b6d4; animation-delay: .32s; --tx: 30px; --ty: -45px; }
+        .completion.visible .confetti:nth-child(7) { background: #f472b6; animation-delay: .22s; --tx: -55px; --ty: -30px; }
+        .completion.visible .confetti:nth-child(8) { background: #34d399; animation-delay: .38s; --tx: 60px; --ty: -20px; }
+        @keyframes confetti-burst {
+            0% { opacity: 1; transform: translate(0,0) rotate(0) scale(1); }
+            100% { opacity: 0; transform: translate(var(--tx), var(--ty)) rotate(180deg) scale(0); }
+        }
+        #pipelineSummaryCanvas { width: min(440px, 88vw); height: 80px; margin: 0 auto; }
+
+        /* ===== RIGHT STEPS ===== */
+        .scrolly-steps { width: 45%; flex-shrink: 0; }
+        .step { min-height: 100vh; display: flex; align-items: center; padding: 80px 40px 80px 48px; }
+        .step-card {
+            max-width: 420px; width: 100%; padding: 36px 32px; border-radius: 20px;
+            background: #fff; border: 1px solid #f0f0f5;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02);
+            position: relative; overflow: hidden;
+            opacity: 0.35; transform: translateY(24px) scale(0.97);
+            transition: all .7s cubic-bezier(.4,0,.2,1);
+        }
+        .step-card::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6);
+            opacity: 0; transition: opacity .5s ease;
+        }
+        .step.is-active .step-card { opacity: 1; transform: translateY(0) scale(1); box-shadow: 0 12px 40px rgba(0,0,0,0.07); border-color: #e5e7eb; }
+        .step.is-active .step-card::before { opacity: 1; }
+        .step-num {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 32px; height: 32px; border-radius: 10px;
+            background: linear-gradient(135deg, #d1fae5, #ecfdf5);
+            font-size: 14px; font-weight: 700; color: #059669;
+            margin-bottom: 16px; font-family: 'JetBrains Mono', monospace;
+        }
+        .step-card h3 { font-size: 22px; font-weight: 700; margin-bottom: 10px; line-height: 1.3; letter-spacing: -0.02em; color: #1a1a2e; }
+        .step-card p { font-size: 15px; line-height: 1.75; color: #6b7280; margin-bottom: 16px; }
+        .step-card .code-snippet {
+            font-family: 'JetBrains Mono', monospace; font-size: 12px;
+            background: #1a1a2e; color: #6ee7b7; padding: 12px 16px; border-radius: 8px;
+            margin-bottom: 16px; overflow-x: auto; line-height: 1.6;
+        }
+        .step-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; color: #059669; background: #ecfdf5; padding: 5px 14px; border-radius: 100px; }
+
+        @media (max-width: 900px) {
+            .scrolly-wrapper { flex-direction: column; }
+            .scrolly-canvas { width: 100%; height: 50vh; top: 0; position: sticky; }
+            .scrolly-steps { width: 100%; }
+            .step { min-height: 80vh; padding: 40px 20px; justify-content: center; }
+            .step-card { max-width: 92%; padding: 28px 24px; }
+            .step-card h3 { font-size: 18px; }
+            .step-card p { font-size: 14px; }
+        }
+
+        .side-dots { position: fixed; right: 24px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 12px; z-index: 100000; opacity: 0; transition: opacity .5s ease; }
+        .side-dots.visible { opacity: 1; }
+        .side-dot { width: 8px; height: 8px; border-radius: 50%; background: #d1d5db; cursor: pointer; transition: all .3s ease; border: none; padding: 0; }
+        .side-dot:hover { background: #9ca3af; transform: scale(1.3); }
+        .side-dot.active { background: #10b981; transform: scale(1.6); box-shadow: 0 0 12px rgba(16,185,129,.5); }
+        .progress-bar { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #10b981, #3b82f6, #8b5cf6); z-index: 100002; width: 0%; transition: width .15s linear; box-shadow: 0 0 8px rgba(16,185,129,0.4); }
+
+        /* ===== SECTIONS ===== */
+        .arch-section { padding: 80px 0; background: linear-gradient(135deg, #0f172a, #1e293b); color: #fff; }
+        .arch-section h2 { font-size: clamp(28px, 4vw, 36px); font-weight: 700; text-align: center; margin-bottom: 48px; letter-spacing: -0.02em; }
+        .arch-diagram { max-width: 900px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; }
+        .arch-box { padding: 20px 24px; border-radius: 14px; text-align: center; min-width: 110px; border: 1px solid rgba(255,255,255,.08); background: rgba(255,255,255,.04); opacity: 0; transform: translateY(20px); transition: all .6s cubic-bezier(.34,1.56,.64,1); }
+        .arch-box.show { opacity: 1; transform: translateY(0); }
+        .arch-box .arch-icon { font-size: 28px; margin-bottom: 8px; }
+        .arch-box .arch-label { font-size: 13px; font-weight: 600; opacity: .8; }
+        .arch-box .arch-desc { font-size: 11px; opacity: .4; margin-top: 4px; }
+        .arch-box:nth-child(1) { transition-delay: 0s; } .arch-box:nth-child(2) { transition-delay: .08s; } .arch-box:nth-child(3) { transition-delay: .16s; }
+        .arch-box:nth-child(4) { transition-delay: .24s; } .arch-box:nth-child(5) { transition-delay: .32s; } .arch-box:nth-child(6) { transition-delay: .4s; }
+        .arch-box:nth-child(7) { transition-delay: .48s; }
+        .arch-arrow { color: rgba(255,255,255,.15); font-size: 20px; }
+
+        .concept-section { padding: 80px 0; }
+        .concept-section:nth-child(even) { background: #fafafa; }
+        .concept-row { display: flex; align-items: center; gap: 56px; max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+        .concept-row.reverse { flex-direction: row-reverse; }
+        .concept-content { flex: 1; }
+        .concept-content h2 { font-size: clamp(28px, 4vw, 36px); font-weight: 700; margin-bottom: 16px; line-height: 1.2; letter-spacing: -0.02em; color: #1a1a2e; }
+        .concept-content p { font-size: 16px; color: #6b7280; line-height: 1.75; }
+        .concept-content .code-block { font-family: 'JetBrains Mono', monospace; font-size: 13px; background: #1a1a2e; color: #a5f3fc; padding: 20px 24px; border-radius: 12px; margin-top: 20px; overflow-x: auto; line-height: 1.7; }
+        .concept-content .code-block .kw { color: #c084fc; }
+        .concept-content .code-block .fn { color: #6ee7b7; }
+        .concept-content .code-block .str { color: #fbbf24; }
+        .concept-content .code-block .cm { color: #6b7280; }
+        .concept-visual { flex: 1; border-radius: 16px; overflow: hidden; background: #f3f4f6; aspect-ratio: 16/10; display: flex; align-items: center; justify-content: center; }
+        .concept-visual__inner { width: 80%; height: 80%; border-radius: 12px; background: linear-gradient(135deg, #d1fae5, #ecfdf5); display: flex; align-items: center; justify-content: center; font-size: 48px; opacity: .6; }
+        @media (max-width: 768px) { .concept-row, .concept-row.reverse { flex-direction: column; gap: 32px; } }
+
+        .faq-section { padding: 80px 0; max-width: 720px; margin: 0 auto; }
+        .faq-section > h2 { font-size: clamp(28px, 4vw, 36px); font-weight: 700; text-align: center; margin-bottom: 48px; letter-spacing: -0.02em; }
+        .faq-item { margin-bottom: 8px; }
+        .faq-q { width: 100%; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px 20px; font-size: 15px; font-weight: 600; color: #1a1a2e; cursor: pointer; text-align: left; font-family: inherit; display: flex; justify-content: space-between; align-items: center; transition: all .2s; }
+        .faq-q:hover { border-color: #a7f3d0; }
+        .faq-q[aria-expanded="true"] { border-color: #10b981; border-bottom-left-radius: 0; border-bottom-right-radius: 0; background: #f0fdf4; }
+        .faq-chevron { width: 16px; height: 16px; transition: transform .25s; flex-shrink: 0; color: #10b981; }
+        .faq-q[aria-expanded="true"] .faq-chevron { transform: rotate(180deg); }
+        .faq-a { display: none; background: #f0fdf4; border: 1px solid #10b981; border-top: none; border-radius: 0 0 12px 12px; padding: 16px 20px; font-size: 14px; color: #4b5563; line-height: 1.75; margin-bottom: 12px; }
+        .faq-a.open { display: block; }
+
+        .cta-section { padding: 80px 0; background: linear-gradient(135deg, #064e3b, #047857); color: #fff; }
+        .cta-inner { max-width: 1200px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; gap: 56px; }
+        .cta-visual { flex: 1; border-radius: 16px; overflow: hidden; background: rgba(255,255,255,.05); aspect-ratio: 16/10; display: flex; align-items: center; justify-content: center; border: 1px solid rgba(255,255,255,.08); }
+        .cta-visual__icon { font-size: 64px; opacity: .3; }
+        .cta-content { flex: 1; }
+        .cta-content h2 { font-size: clamp(32px, 5vw, 44px); font-weight: 800; margin-bottom: 16px; line-height: 1.1; letter-spacing: -0.03em; }
+        .cta-content p { font-size: 16px; opacity: .7; line-height: 1.7; margin-bottom: 32px; max-width: 440px; }
+        .cta-content p a { color: #6ee7b7; text-decoration: underline; }
+        .btn-cta-primary { display: inline-flex; align-items: center; gap: 8px; padding: 14px 32px; border-radius: 10px; background: linear-gradient(135deg, #10b981, #059669); color: #fff; font-weight: 600; font-size: 16px; border: none; cursor: pointer; transition: all .25s; font-family: inherit; }
+        .btn-cta-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 32px rgba(16,185,129,.4); }
+        @media (max-width: 768px) { .cta-inner { flex-direction: column; gap: 32px; } }
+
+        .site-footer { background: #111827; color: #fff; }
+        .footer-main { padding: 56px 0 40px; }
+        .footer-grid { display: grid; grid-template-columns: 1.5fr repeat(3, 1fr); gap: 32px; }
+        .footer-brand p { font-size: 13px; opacity: .4; line-height: 1.7; margin-top: 12px; max-width: 220px; }
+        .footer-col h4 { font-size: 13px; font-weight: 600; margin-bottom: 16px; opacity: .8; }
+        .footer-col ul li { margin-bottom: 10px; }
+        .footer-col ul li a { font-size: 13px; opacity: .4; transition: opacity .2s; }
+        .footer-col ul li a:hover { opacity: .9; }
+        .footer-bottom { padding: 20px 0; border-top: 1px solid rgba(255,255,255,.06); display: flex; align-items: center; justify-content: space-between; }
+        .footer-bottom__copy { font-size: 12px; opacity: .3; }
+        .footer-social { display: flex; gap: 16px; }
+        .footer-social a { width: 32px; height: 32px; border-radius: 8px; background: rgba(255,255,255,.06); display: flex; align-items: center; justify-content: center; opacity: .5; transition: all .2s; font-size: 13px; }
+        .footer-social a:hover { opacity: 1; background: rgba(255,255,255,.12); }
+        @media (max-width: 768px) { .footer-grid { grid-template-columns: repeat(2, 1fr); } .footer-brand { grid-column: span 2; } .footer-bottom { flex-direction: column; gap: 12px; text-align: center; } }
+    </style>
+</head>
+<body>
+
+<header class="site-header" id="siteHeader">
+    <div class="row-inner">
+        <a href="#" class="logo"><span class="logo-icon">R</span><span>RAG<span style="font-weight:400;color:#6b7280">Explained</span></span></a>
+        <nav class="main-nav">
+            <a href="#scrolly">Overview</a>
+            <a href="#architecture">Architecture</a>
+            <a href="#components">Components</a>
+            <a href="#faq">FAQ</a>
+        </nav>
+        <div class="header-actions">
+            <button class="btn-ghost">GitHub</button>
+            <button class="btn-primary">Get Started</button>
+            <button class="mobile-toggle" aria-label="Menu"><span></span><span></span><span></span></button>
+        </div>
+    </div>
+</header>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="side-dots" id="sideDots">
+    <button class="side-dot active" data-idx="0"></button>
+    <button class="side-dot" data-idx="1"></button>
+    <button class="side-dot" data-idx="2"></button>
+    <button class="side-dot" data-idx="3"></button>
+    <button class="side-dot" data-idx="4"></button>
+    <button class="side-dot" data-idx="5"></button>
+</div>
+
+<section class="hero">
+    <div class="row-inner">
+        <div class="hero-badge"><span class="hero-badge__dot"></span> Interactive Deep Dive</div>
+        <h1><span class="mono">RAG</span> Explained</h1>
+        <p>A visual journey through Retrieval-Augmented Generation — how AI systems retrieve knowledge and generate accurate, grounded answers.</p>
+        <a href="#scrolly"><button class="hero-cta">Start scrolling ↓</button></a>
+        <div class="hero-scroll-hint"><div class="scroll-mouse"><div class="scroll-wheel"></div></div>Scroll to explore</div>
+    </div>
+</section>
+
+<!-- ====== SCROLLYTELLING ====== -->
+<div id="scrolly" class="scrolly-wrapper">
+    <div class="scrolly-canvas" id="scrollyCanvas">
+        <div class="canvas-inner">
+            <canvas id="particleCanvas"></canvas>
+
+            <!-- Scene 0 -->
+            <div class="scene-layer visible" id="scene0">
+                <h3>What is RAG?</h3>
+                <p>Retrieval-Augmented Generation enhances LLMs with external knowledge</p>
+                <div class="rag-flow-canvas" id="ragFlow">
+                    <div class="rag-node"><div class="node-circle">📄</div><div class="node-label">Documents</div></div>
+                    <div class="rag-node"><div class="node-circle">🔍</div><div class="node-label">Retrieve</div></div>
+                    <div class="rag-node"><div class="node-circle">🧠</div><div class="node-label">Augment</div></div>
+                    <div class="rag-node"><div class="node-circle">💬</div><div class="node-label">Generate</div></div>
+                    <div class="rag-connector"></div><div class="rag-connector"></div><div class="rag-connector"></div>
+                    <div class="flow-dot"></div><div class="flow-dot"></div><div class="flow-dot"></div>
+                </div>
+                <div class="counters">
+                    <div class="counter-item"><div class="counter-num" data-target="10">0</div><div class="counter-label">x Accuracy</div></div>
+                    <div class="counter-item"><div class="counter-num" data-target="92">0</div><div class="counter-label">% Grounded</div></div>
+                    <div class="counter-item"><div class="counter-num" data-target="3">0</div><div class="counter-label">Components</div></div>
+                </div>
+            </div>
+
+            <!-- Scene 1 -->
+            <div class="scene-layer" id="scene1">
+                <h3>Document Ingestion</h3>
+                <p>Documents are loaded, chunked, embedded, and stored</p>
+                <div class="pipeline-viz">
+                    <div class="pipeline-canvas-wrap"><canvas id="pipelineCanvas"></canvas></div>
+                </div>
+            </div>
+
+            <!-- Scene 2 -->
+            <div class="scene-layer" id="scene2">
+                <h3>Vector Embeddings</h3>
+                <p>Similar content clusters together in vector space</p>
+                <svg id="vectorSvg"></svg>
+                <div class="vec-tooltip" id="vecTooltip"></div>
+            </div>
+
+            <!-- Scene 3 -->
+            <div class="scene-layer" id="scene3">
+                <h3>Similarity Search</h3>
+                <p>Chunks ranked by cosine similarity score</p>
+                <div class="sim-bars-wrap"><canvas id="simBarsCanvas"></canvas></div>
+            </div>
+
+            <!-- Scene 4 -->
+            <div class="scene-layer" id="scene4">
+                <h3>Context Assembly</h3>
+                <p>Top chunks selected and assembled into the prompt</p>
+                <div class="ctx-viz"><canvas id="ctxCanvas"></canvas></div>
+            </div>
+
+            <!-- Scene 5 -->
+            <div class="scene-layer completion" id="scene5">
+                <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
+                <div class="confetti"></div><div class="confetti"></div><div class="confetti"></div>
+                <div class="confetti"></div><div class="confetti"></div>
+                <div class="checkmark-ring"><svg viewBox="0 0 24 24"><polyline points="6 12 10 16 18 8"/></svg></div>
+                <h3>RAG Pipeline Complete</h3>
+                <p>Query answered with grounded, up-to-date knowledge</p>
+                <canvas id="pipelineSummaryCanvas"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="scrolly-steps">
+        <div class="step is-active" data-step="0"><div class="step-card">
+            <div class="step-num">01</div><h3>What is RAG?</h3>
+            <p><strong>Retrieval-Augmented Generation</strong> combines LLMs with external knowledge retrieval. Instead of relying solely on training data, RAG systems fetch relevant documents at query time.</p>
+            <div class="code-snippet">RAG = Retrieval + Augmented + Generation</div>
+            <span class="step-tag">🧠 Foundation</span>
+        </div></div>
+        <div class="step" data-step="1"><div class="step-card">
+            <div class="step-num">02</div><h3>Document Ingestion Pipeline</h3>
+            <p>Documents are loaded, split into manageable chunks, converted to vector embeddings, and stored in a vector database with metadata.</p>
+            <div class="code-snippet">docs → split(512) → embed() → vector_db.store()</div>
+            <span class="step-tag">📄 Ingestion</span>
+        </div></div>
+        <div class="step" data-step="2"><div class="step-card">
+            <div class="step-num">03</div><h3>Vector Embeddings</h3>
+            <p>Each chunk becomes a high-dimensional vector. Similar concepts cluster together, enabling semantic search beyond keyword matching.</p>
+            <div class="code-snippet">embed("RAG improves accuracy") → [0.023, -0.156, ...]</div>
+            <span class="step-tag">🧮 Embeddings</span>
+        </div></div>
+        <div class="step" data-step="3"><div class="step-card">
+            <div class="step-num">04</div><h3>Similarity Search</h3>
+            <p>Cosine similarity finds the closest document chunks — those most semantically relevant to the query.</p>
+            <div class="code-snippet">top_k = sorted(scores, desc)[:5]</div>
+            <span class="step-tag">🔍 Retrieval</span>
+        </div></div>
+        <div class="step" data-step="4"><div class="step-card">
+            <div class="step-num">05</div><h3>Context Assembly</h3>
+            <p>Top-ranked chunks are deduplicated, truncated to fit the context window, and formatted with the user's question.</p>
+            <div class="code-snippet">prompt = f"Context:\n{chunks}\nQ: {query}"</div>
+            <span class="step-tag">📋 Context</span>
+        </div></div>
+        <div class="step" data-step="5"><div class="step-card">
+            <div class="step-num">06</div><h3>Grounded Generation</h3>
+            <p>The LLM generates an answer grounded in retrieved context, reducing hallucinations and ensuring accuracy.</p>
+            <span class="step-tag">✅ Complete</span>
+        </div></div>
+    </div>
+</div>
+
+<section class="arch-section" id="architecture">
+    <div class="row-inner">
+        <h2>RAG Architecture at a Glance</h2>
+        <div class="arch-diagram" id="archDiagram">
+            <div class="arch-box"><div class="arch-icon">📚</div><div class="arch-label">Data Sources</div><div class="arch-desc">Docs, DBs, APIs</div></div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box"><div class="arch-icon">✂️</div><div class="arch-label">Chunking</div><div class="arch-desc">Split & clean</div></div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box"><div class="arch-icon">🧮</div><div class="arch-label">Embedding</div><div class="arch-desc">Vector encoding</div></div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box"><div class="arch-icon">🗄️</div><div class="arch-label">Vector Store</div><div class="arch-desc">Index & search</div></div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box"><div class="arch-icon">🔍</div><div class="arch-label">Retrieval</div><div class="arch-desc">Top-K search</div></div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box"><div class="arch-icon">📋</div><div class="arch-label">Prompt</div><div class="arch-desc">Context + Query</div></div>
+            <span class="arch-arrow">→</span>
+            <div class="arch-box"><div class="arch-icon">🤖</div><div class="arch-label">LLM</div><div class="arch-desc">Grounded answer</div></div>
+        </div>
+    </div>
+</section>
+
+<div class="concept-section" id="components">
+    <div class="concept-row">
+        <div class="concept-content">
+            <h2>Chunking Strategies</h2>
+            <p>How you split documents matters. Fixed-size chunks are simple but may break semantic units. Recursive character splitting respects natural boundaries.</p>
+            <div class="code-block"><span class="cm">// Recursive Character Splitter</span>
+<span class="kw">const</span> chunks = <span class="fn">splitDocuments</span>(docs, {
+  chunkSize: <span class="str">512</span>,
+  chunkOverlap: <span class="str">50</span>,
+  separators: [<span class="str">"\n\n"</span>, <span class="str">"\n"</span>, <span class="str">". "</span>, <span class="str">" "</span>]
+});</div>
+        </div>
+        <div class="concept-visual"><div class="concept-visual__inner">✂️</div></div>
+    </div>
+</div>
+<div class="concept-section">
+    <div class="concept-row reverse">
+        <div class="concept-content">
+            <h2>Vector Databases</h2>
+            <p>Specialized databases for approximate nearest neighbor (ANN) search using HNSW, IVF, or PQ algorithms — sub-millisecond similarity search.</p>
+            <div class="code-block"><span class="kw">const</span> results = <span class="kw">await</span> vectorStore.<span class="fn">similaritySearch</span>(
+  queryEmbedding, <span class="str">5</span>, { scoreThreshold: <span class="str">0.7</span> }
+);</div>
+        </div>
+        <div class="concept-visual"><div class="concept-visual__inner">🗄️</div></div>
+    </div>
+</div>
+<div class="concept-section">
+    <div class="concept-row">
+        <div class="concept-content">
+            <h2>Advanced RAG Techniques</h2>
+            <p>Techniques like <strong>HyDE</strong>, <strong>query rewriting</strong>, <strong>re-ranking</strong>, and <strong>self-RAG</strong> significantly improve retrieval quality.</p>
+            <div class="code-block"><span class="kw">const</span> reranked = <span class="kw">await</span> <span class="fn">reranker</span>.<span class="fn">score</span>({
+  query: originalQuery,
+  documents: retrievedChunks,
+  model: <span class="str">"cross-encoder"</span>, topN: <span class="str">3</span>
+});</div>
+        </div>
+        <div class="concept-visual"><div class="concept-visual__inner">🚀</div></div>
+    </div>
+</div>
+
+<div class="faq-section" id="faq">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-item"><button class="faq-q" aria-expanded="false">How does RAG differ from fine-tuning?<svg class="faq-chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="faq-a">Fine-tuning modifies model weights. RAG provides relevant context at query time without changing the model. RAG is better for factual, up-to-date knowledge; fine-tuning for style/behavior changes.</div></div>
+    <div class="faq-item"><button class="faq-q" aria-expanded="false">What chunk size should I use?<svg class="faq-chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="faq-a">Common starting points: 256-1024 tokens with 10-20% overlap. Smaller chunks improve precision; larger preserve context. Always benchmark for your use case.</div></div>
+    <div class="faq-item"><button class="faq-q" aria-expanded="false">How do I evaluate RAG quality?<svg class="faq-chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="faq-a">Key metrics: <strong>answer relevance</strong>, <strong>faithfulness</strong> (grounded in context?), <strong>context precision</strong>. Use RAGAS, DeepEval, or LangSmith.</div></div>
+    <div class="faq-item"><button class="faq-q" aria-expanded="false">Can RAG reduce hallucinations?<svg class="faq-chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="faq-a">Yes — significantly. RAG grounds responses in retrieved evidence. But it doesn't eliminate hallucinations entirely if context is insufficient or contradictory.</div></div>
+    <div class="faq-item"><button class="faq-q" aria-expanded="false">What are the main challenges?<svg class="faq-chevron" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <div class="faq-a"><strong>Chunk quality</strong>, <strong>embedding model selection</strong>, <strong>context window limits</strong>, <strong>retrieval latency</strong>, and <strong>keeping knowledge updated</strong>.</div></div>
+</div>
+
+<section class="cta-section">
+    <div class="cta-inner">
+        <div class="cta-visual"><div class="cta-visual__icon">🤖</div></div>
+        <div class="cta-content">
+            <h2>Ready to build with RAG?</h2>
+            <p>Start building production-ready RAG systems with LangChain, LlamaIndex, or Vectorize.</p>
+            <button class="btn-cta-primary">Explore resources <span>→</span></button>
+        </div>
+    </div>
+</section>
+
+<footer class="site-footer">
+    <div class="footer-main"><div class="row-inner">
+        <div class="footer-grid">
+            <div class="footer-brand"><a href="#" class="logo" style="color:#fff"><span class="logo-icon">R</span><span>RAG<span style="font-weight:400;opacity:.5">Explained</span></span></a>
+            <p>An interactive deep-dive into Retrieval-Augmented Generation.</p></div>
+            <div class="footer-col"><h4>Concepts</h4><ul><li><a href="#">What is RAG?</a></li><li><a href="#">Vector Embeddings</a></li><li><a href="#">Chunking</a></li><li><a href="#">Similarity Search</a></li></ul></div>
+            <div class="footer-col"><h4>Tools</h4><ul><li><a href="#">LangChain</a></li><li><a href="#">LlamaIndex</a></li><li><a href="#">Pinecone</a></li><li><a href="#">ChromaDB</a></li></ul></div>
+            <div class="footer-col"><h4>Resources</h4><ul><li><a href="#">Research</a></li><li><a href="#">Tutorials</a></li><li><a href="#">Benchmarks</a></li><li><a href="#">Community</a></li></ul></div>
+        </div>
+    </div></div>
+    <div class="footer-bottom"><div class="row-inner" style="display:flex;align-items:center;justify-content:space-between;width:100%;">
+        <span class="footer-bottom__copy">© 2026 RAG Explained</span>
+        <div class="footer-social"><a href="#">⌨</a><a href="#">𝕏</a><a href="#">💬</a></div>
+    </div></div>
+</footer>
+
+<script>
+(function() {
+    // ═══ GLOBALS ═══
+    const STEPS = document.querySelectorAll('.step');
+    const PROGRESS = document.getElementById('progressBar');
+    const SCROLLY = document.getElementById('scrolly');
+    const DOTS = document.querySelectorAll('.side-dot');
+    const SIDE_DOTS = document.getElementById('sideDots');
+    const HEADER = document.getElementById('siteHeader');
+    let currentScene = 0, transitionTimer = null;
+
+    // ═══ PARTICLE BACKGROUND ═══
+    const particleCanvas = document.getElementById('particleCanvas');
+    const pCtx = particleCanvas.getContext('2d');
+    let particles = [], pW, pH;
+    const COLORS = ['#10b981','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#06b6d4'];
+
+    function resizeParticleCanvas() {
+        const r = particleCanvas.parentElement.getBoundingClientRect();
+        pW = particleCanvas.width = r.width; pH = particleCanvas.height = r.height;
+    }
+    function initParticles() {
+        particles = [];
+        for (let i = 0; i < 80; i++) {
+            particles.push({
+                x: Math.random() * pW, y: Math.random() * pH,
+                vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4,
+                r: Math.random() * 2 + 0.5,
+                color: COLORS[Math.floor(Math.random() * COLORS.length)],
+                alpha: Math.random() * 0.3 + 0.1
+            });
+        }
+    }
+    function drawParticles() {
+        pCtx.clearRect(0, 0, pW, pH);
+        // Connections
+        for (let i = 0; i < particles.length; i++) {
+            for (let j = i + 1; j < particles.length; j++) {
+                const dx = particles[i].x - particles[j].x, dy = particles[i].y - particles[j].y;
+                const d = Math.sqrt(dx * dx + dy * dy);
+                if (d < 120) {
+                    pCtx.beginPath();
+                    pCtx.moveTo(particles[i].x, particles[i].y);
+                    pCtx.lineTo(particles[j].x, particles[j].y);
+                    pCtx.strokeStyle = `rgba(16,185,129,${0.06 * (1 - d / 120)})`;
+                    pCtx.lineWidth = 0.5;
+                    pCtx.stroke();
+                }
+            }
+        }
+        // Dots
+        particles.forEach(p => {
+            p.x += p.vx; p.y += p.vy;
+            if (p.x < 0 || p.x > pW) p.vx *= -1;
+            if (p.y < 0 || p.y > pH) p.vy *= -1;
+            pCtx.beginPath();
+            pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            pCtx.fillStyle = p.color.replace(')', `,${p.alpha})`).replace('rgb', 'rgba').replace('#', '');
+            // Convert hex to rgba
+            const hr = parseInt(p.color.slice(1,3),16), hg = parseInt(p.color.slice(3,5),16), hb = parseInt(p.color.slice(5,7),16);
+            pCtx.fillStyle = `rgba(${hr},${hg},${hb},${p.alpha})`;
+            pCtx.fill();
+        });
+        requestAnimationFrame(drawParticles);
+    }
+    resizeParticleCanvas(); initParticles(); drawParticles();
+    window.addEventListener('resize', () => { resizeParticleCanvas(); initParticles(); });
+
+    // ═══ HEADER ═══
+    window.addEventListener('scroll', () => HEADER.classList.toggle('scrolled', window.scrollY > 20), { passive: true });
+
+    // ═══ SIDE DOTS ═══
+    const scrollyObs = new IntersectionObserver(([e]) => SIDE_DOTS.classList.toggle('visible', e.isIntersecting), { threshold: 0.05 });
+    scrollyObs.observe(SCROLLY);
+
+    // ═══ FAQ ═══
+    document.querySelectorAll('.faq-q').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const exp = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', String(!exp));
+            btn.nextElementSibling.classList.toggle('open');
+        });
+    });
+
+    // ═══ ARCHITECTURE ═══
+    const archObs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if (e.isIntersecting) e.target.querySelectorAll('.arch-box').forEach(b => b.classList.add('show')); });
+    }, { threshold: 0.3 });
+    archObs.observe(document.getElementById('archDiagram'));
+
+    // ═══ COUNTERS ═══
+    let countersAnimated = false;
+    function animateCounters() {
+        if (countersAnimated) return; countersAnimated = true;
+        document.querySelectorAll('.counter-num').forEach(el => {
+            const target = parseInt(el.dataset.target), start = performance.now();
+            (function tick(now) {
+                const p = Math.min((now - start) / 2200, 1);
+                el.textContent = Math.round(target * (1 - Math.pow(1 - p, 4))).toLocaleString();
+                if (p < 1) requestAnimationFrame(tick);
+            })(start);
+        });
+    }
+
+    // ═══ SCENE 1: PIPELINE CANVAS ═══
+    let pipelineAnim = null, pipelineProgress = 0;
+    const stages = [
+        { label: 'Load Docs', icon: '📄', color: '#fbbf24' },
+        { label: 'Chunk', icon: '✂️', color: '#60a5fa' },
+        { label: 'Embed', icon: '🧮', color: '#a78bfa' },
+        { label: 'Store', icon: '🗄️', color: '#34d399' },
+        { label: 'Index', icon: '✅', color: '#f472b6' }
+    ];
+
+    function drawPipeline(progress) {
+        const canvas = document.getElementById('pipelineCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const r = canvas.parentElement.getBoundingClientRect();
+        canvas.width = r.width; canvas.height = r.height;
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const gap = w / (stages.length + 1);
+        const y = h / 2;
+
+        // Draw connections first
+        for (let i = 0; i < stages.length - 1; i++) {
+            const x1 = gap * (i + 1), x2 = gap * (i + 2);
+            const segProgress = Math.max(0, Math.min(1, (progress - i * 0.2) / 0.2));
+            ctx.beginPath();
+            ctx.moveTo(x1 + 24, y);
+            ctx.lineTo(x1 + 24 + (x2 - x1 - 48) * segProgress, y);
+            const grad = ctx.createLinearGradient(x1, 0, x2, 0);
+            grad.addColorStop(0, stages[i].color + '60');
+            grad.addColorStop(1, stages[i + 1].color + '60');
+            ctx.strokeStyle = grad;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Flowing particle
+            if (segProgress > 0 && segProgress < 1) {
+                const px = x1 + 24 + (x2 - x1 - 48) * segProgress;
+                ctx.beginPath();
+                ctx.arc(px, y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = stages[i + 1].color;
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(px, y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = stages[i + 1].color + '30';
+                ctx.fill();
+            }
+        }
+
+        // Draw nodes
+        stages.forEach((s, i) => {
+            const x = gap * (i + 1);
+            const nodeProgress = Math.max(0, Math.min(1, (progress - i * 0.18) / 0.15));
+            const scale = nodeProgress;
+            const alpha = nodeProgress;
+
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.translate(x, y);
+
+            // Glow
+            if (nodeProgress > 0.5) {
+                const glowR = 28 + Math.sin(Date.now() / 500 + i) * 3;
+                const glow = ctx.createRadialGradient(0, 0, 10, 0, 0, glowR);
+                glow.addColorStop(0, s.color + '25');
+                glow.addColorStop(1, s.color + '00');
+                ctx.beginPath();
+                ctx.arc(0, 0, glowR, 0, Math.PI * 2);
+                ctx.fillStyle = glow;
+                ctx.fill();
+            }
+
+            // Circle
+            ctx.beginPath();
+            ctx.arc(0, 0, 22 * scale, 0, Math.PI * 2);
+            ctx.fillStyle = '#0f172a';
+            ctx.fill();
+            ctx.strokeStyle = s.color + (nodeProgress >= 1 ? 'cc' : '60');
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Icon
+            if (scale > 0.5) {
+                ctx.font = `${16 * scale}px sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(s.icon, 0, 0);
+            }
+
+            // Label
+            ctx.font = `600 ${11 * Math.min(scale * 1.2, 1)}px Inter, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.fillStyle = 'rgba(255,255,255,' + (0.7 * alpha) + ')';
+            ctx.fillText(s.label, 0, 38);
+
+            // Status
+            if (nodeProgress >= 1) {
+                ctx.font = '500 9px JetBrains Mono, monospace';
+                ctx.fillStyle = s.color + 'aa';
+                ctx.fillText('✓', 0, 52);
+            }
+
+            ctx.restore();
+        });
+    }
+
+    function animatePipeline() {
+        pipelineProgress = Math.min(1, pipelineProgress + 0.008);
+        drawPipeline(pipelineProgress);
+        if (pipelineProgress < 1) pipelineAnim = requestAnimationFrame(animatePipeline);
+    }
+
+    // ═══ SCENE 2: D3 VECTOR SPACE ═══
+    let vectorSim = null, vectorRendered = false;
+    function renderVectorSpace() {
+        if (vectorRendered) return;
+        vectorRendered = true;
+        const svg = d3.select('#vectorSvg');
+        const w = 440, h = 280;
+        svg.attr('viewBox', `0 0 ${w} ${h}`);
+
+        const clusters = [
+            { name: 'Documents', color: '#10b981', nodes: 8, cx: 90, cy: 100 },
+            { name: 'Code', color: '#3b82f6', nodes: 6, cx: 220, cy: 80 },
+            { name: 'Tables', color: '#8b5cf6', nodes: 7, cx: 350, cy: 110 }
+        ];
+
+        const nodes = [];
+        clusters.forEach(c => {
+            for (let i = 0; i < c.nodes; i++) {
+                nodes.push({
+                    x: c.cx + (Math.random() - 0.5) * 70,
+                    y: c.cy + (Math.random() - 0.5) * 60,
+                    r: Math.random() * 4 + 4,
+                    color: c.color, cluster: c.name,
+                    label: c.name.slice(0, 3).toLowerCase() + (i + 1)
+                });
+            }
+        });
+        // Query node
+        const queryNode = { x: 200, y: 200, r: 8, color: '#f59e0b', cluster: 'Query', label: 'Q', isQuery: true };
+        nodes.push(queryNode);
+
+        // Links from query to nearest
+        const links = [];
+        const docNodes = nodes.filter(n => n.cluster === 'Documents').slice(0, 3);
+        docNodes.forEach(n => {
+            links.push({ source: queryNode, target: n, strength: Math.random() * 0.4 + 0.3 });
+        });
+        const codeNodes = nodes.filter(n => n.cluster === 'Code').slice(0, 1);
+        codeNodes.forEach(n => {
+            links.push({ source: queryNode, target: n, strength: 0.15 });
+        });
+
+        const simulation = d3.forceSimulation(nodes)
+            .force('charge', d3.forceManyBody().strength(-15))
+            .force('center', d3.forceCenter(w / 2, h / 2))
+            .force('collision', d3.forceCollide().radius(d => d.r + 3))
+            .force('x', d3.forceX(d => d.cluster === 'Query' ? w / 2 : (d.cluster === 'Documents' ? 90 : d.cluster === 'Code' ? 220 : 350)).strength(0.15))
+            .force('y', d3.forceY(d => d.cluster === 'Query' ? 200 : (d.cluster === 'Documents' ? 100 : d.cluster === 'Code' ? 80 : 110)).strength(0.15));
+
+        // Links
+        const linkG = svg.append('g');
+        const linkElems = linkG.selectAll('line').data(links).enter().append('line')
+            .attr('stroke', d => d.target.color).attr('stroke-opacity', 0)
+            .attr('stroke-width', d => d.strength * 4)
+            .attr('stroke-dasharray', '4 3');
+
+        // Animate links
+        setTimeout(() => {
+            linkElems.transition().duration(1200).attr('stroke-opacity', d => d.strength);
+        }, 800);
+
+        // Cluster labels
+        const labelG = svg.append('g');
+        clusters.forEach(c => {
+            labelG.append('text')
+                .attr('x', c.cx).attr('y', c.cy - 40)
+                .attr('text-anchor', 'middle')
+                .attr('fill', c.color).attr('font-size', '11px').attr('font-weight', '600')
+                .attr('opacity', 0)
+                .text(c.name)
+                .transition().duration(600).delay(400).attr('opacity', 0.6);
+        });
+
+        // Nodes
+        const nodeG = svg.append('g');
+        const nodeElems = nodeG.selectAll('circle').data(nodes).enter().append('circle')
+            .attr('r', 0)
+            .attr('fill', d => d.color)
+            .attr('stroke', d => d.color).attr('stroke-width', 1.5).attr('stroke-opacity', 0.3);
+
+        // Animate nodes in
+        nodeElems.transition().duration(600).delay((d, i) => i * 40)
+            .attr('r', d => d.r);
+
+        // Query glow
+        nodeG.filter(d => d.isQuery).append('circle')
+            .attr('r', 16).attr('fill', 'none').attr('stroke', '#f59e0b')
+            .attr('stroke-width', 1).attr('stroke-opacity', 0.3)
+            .attr('stroke-dasharray', '3 2');
+
+        simulation.on('tick', () => {
+            nodeElems.attr('cx', d => d.x).attr('cy', d => d.y);
+            linkElems.attr('x1', d => d.source.x).attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x).attr('y2', d => d.target.y);
+        });
+
+        vectorSim = simulation;
+    }
+
+    // ═══ SCENE 3: SIMILARITY BARS ═══
+    const barData = [
+        { label: 'chunk_47.md', score: 0.96, color: '#10b981' },
+        { label: 'chunk_12.md', score: 0.91, color: '#34d399' },
+        { label: 'chunk_03.md', score: 0.87, color: '#6ee7b7' },
+        { label: 'chunk_89.md', score: 0.72, color: '#a7f3d0' },
+        { label: 'chunk_21.md', score: 0.65, color: '#d1fae5' },
+        { label: 'chunk_55.md', score: 0.58, color: '#6ee7b7' },
+        { label: 'chunk_08.md', score: 0.41, color: '#fca5a5' },
+    ];
+    let barProgress = 0, barAnim = null;
+
+    function drawSimBars(progress) {
+        const canvas = document.getElementById('simBarsCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const r = canvas.parentElement.getBoundingClientRect();
+        canvas.width = r.width; canvas.height = r.height;
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const barH = 22, gap = 8, startY = 20, maxW = w * 0.55;
+        const threshold = 0.7;
+
+        // Threshold line
+        const threshX = 80 + maxW * threshold;
+        ctx.beginPath();
+        ctx.moveTo(threshX, 0); ctx.lineTo(threshX, h);
+        ctx.strokeStyle = 'rgba(239,68,68,0.25)';
+        ctx.setLineDash([4, 4]); ctx.stroke(); ctx.setLineDash([]);
+        ctx.font = '500 9px JetBrains Mono, monospace';
+        ctx.fillStyle = 'rgba(239,68,68,0.5)';
+        ctx.textAlign = 'center';
+        ctx.fillText('threshold', threshX, 14);
+
+        barData.forEach((d, i) => {
+            const y = startY + i * (barH + gap);
+            const barProgress = Math.max(0, Math.min(1, (progress - i * 0.08) / 0.3));
+            const barW = maxW * d.score * barProgress;
+
+            // Label
+            ctx.globalAlpha = barProgress;
+            ctx.font = '500 10px JetBrains Mono, monospace';
+            ctx.fillStyle = 'rgba(255,255,255,0.5)';
+            ctx.textAlign = 'right';
+            ctx.fillText(d.label, 75, y + barH / 2 + 3);
+
+            // Bar background
+            ctx.beginPath();
+            ctx.roundRect(80, y, maxW, barH, 4);
+            ctx.fillStyle = 'rgba(255,255,255,0.03)';
+            ctx.fill();
+
+            // Bar fill
+            if (barW > 0) {
+                const grad = ctx.createLinearGradient(80, 0, 80 + barW, 0);
+                grad.addColorStop(0, d.color + '80');
+                grad.addColorStop(1, d.color);
+                ctx.beginPath();
+                ctx.roundRect(80, y, barW, barH, 4);
+                ctx.fillStyle = grad;
+                ctx.fill();
+
+                // Score text
+                if (barProgress > 0.5) {
+                    ctx.font = '700 10px JetBrains Mono, monospace';
+                    ctx.fillStyle = '#fff';
+                    ctx.textAlign = 'left';
+                    ctx.fillText(d.score.toFixed(2), 80 + barW + 8, y + barH / 2 + 3);
+                }
+            }
+
+            ctx.globalAlpha = 1;
+        });
+    }
+
+    function animateSimBars() {
+        barProgress = Math.min(1, barProgress + 0.012);
+        drawSimBars(barProgress);
+        if (barProgress < 1) barAnim = requestAnimationFrame(animateSimBars);
+    }
+
+    // ═══ SCENE 4: CONTEXT ASSEMBLY ═══
+    let ctxProgress = 0, ctxAnim = null;
+
+    function drawContext(progress) {
+        const canvas = document.getElementById('ctxCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const r = canvas.parentElement.getBoundingClientRect();
+        canvas.width = r.width; canvas.height = r.height;
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const cx = w / 2, cy = h / 2 - 10;
+        const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b'];
+
+        // Draw 4 chunk cards assembling
+        const positions = [
+            { tx: cx - 80, ty: cy - 30, label: 'Top Match', sub: 'score: 0.96', color: colors[0] },
+            { tx: cx + 80, ty: cy - 30, label: 'Strong', sub: 'score: 0.91', color: colors[1] },
+            { tx: cx - 80, ty: cy + 40, label: 'Moderate', sub: 'score: 0.87', color: colors[2] },
+            { tx: cx + 80, ty: cy + 40, label: 'Supplement', sub: 'score: 0.72', color: colors[3] },
+        ];
+
+        positions.forEach((p, i) => {
+            const t = Math.max(0, Math.min(1, (progress - i * 0.15) / 0.35));
+            const ease = 1 - Math.pow(1 - t, 3);
+
+            // Start positions (scattered)
+            const startX = p.tx + (i % 2 === 0 ? -120 : 120);
+            const startY = p.ty + (i < 2 ? -80 : 80);
+
+            const x = startX + (p.tx - startX) * ease;
+            const y = startY + (p.ty - startY) * ease;
+            const alpha = ease;
+            const rotation = (1 - ease) * (i % 2 === 0 ? -0.3 : 0.3);
+            const scale = 0.7 + 0.3 * ease;
+
+            ctx.save();
+            ctx.globalAlpha = alpha;
+            ctx.translate(x, y);
+            ctx.rotate(rotation);
+            ctx.scale(scale, scale);
+
+            // Card
+            const cardW = 120, cardH = 48;
+            ctx.beginPath();
+            ctx.roundRect(-cardW / 2, -cardH / 2, cardW, cardH, 8);
+            ctx.fillStyle = 'rgba(255,255,255,0.05)';
+            ctx.fill();
+            ctx.strokeStyle = p.color + '40';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            // Color bar
+            ctx.beginPath();
+            ctx.roundRect(-cardW / 2, -cardH / 2, 4, cardH, [4, 0, 0, 4]);
+            ctx.fillStyle = p.color;
+            ctx.fill();
+
+            // Text
+            ctx.font = '600 11px Inter, sans-serif';
+            ctx.fillStyle = 'rgba(255,255,255,0.8)';
+            ctx.textAlign = 'center';
+            ctx.fillText(p.label, 6, -4);
+
+            ctx.font = '500 9px JetBrains Mono, monospace';
+            ctx.fillStyle = p.color;
+            ctx.fillText(p.sub, 6, 12);
+
+            ctx.restore();
+        });
+
+        // Center prompt box (appears last)
+        if (progress > 0.6) {
+            const promptT = Math.min(1, (progress - 0.6) / 0.3);
+            const promptEase = 1 - Math.pow(1 - promptT, 3);
+            ctx.save();
+            ctx.globalAlpha = promptEase;
+
+            const boxW = 200, boxH = 36;
+            const promptY = cy + 90;
+            ctx.beginPath();
+            ctx.roundRect(cx - boxW / 2, promptY - boxH / 2, boxW, boxH, 8);
+            ctx.fillStyle = 'rgba(16,185,129,0.1)';
+            ctx.fill();
+            ctx.strokeStyle = 'rgba(16,185,129,0.3)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+
+            ctx.font = '600 11px JetBrains Mono, monospace';
+            ctx.fillStyle = '#6ee7b7';
+            ctx.textAlign = 'center';
+            ctx.fillText('→ LLM Prompt', cx, promptY + 4);
+
+            ctx.restore();
+        }
+    }
+
+    function animateContext() {
+        ctxProgress = Math.min(1, ctxProgress + 0.008);
+        drawContext(ctxProgress);
+        if (ctxProgress < 1) ctxAnim = requestAnimationFrame(animateContext);
+    }
+
+    // ═══ SCENE 5: PIPELINE SUMMARY ═══
+    function drawPipelineSummary() {
+        const canvas = document.getElementById('pipelineSummaryCanvas');
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        const r = canvas.parentElement.getBoundingClientRect();
+        canvas.width = Math.min(r.width, 440); canvas.height = 80;
+        const w = canvas.width, h = canvas.height;
+        ctx.clearRect(0, 0, w, h);
+
+        const items = ['📝 Query', '🧮 Embed', '🔍 Retrieve', '📋 Context', '🤖 LLM'];
+        const gap = w / (items.length + 1);
+        const y = h / 2;
+
+        items.forEach((item, i) => {
+            const x = gap * (i + 1);
+            const delay = i * 0.12;
+            // Simple fade in with setTimeout
+            setTimeout(() => {
+                ctx.save();
+                ctx.globalAlpha = 1;
+
+                // Box
+                ctx.beginPath();
+                ctx.roundRect(x - 32, y - 14, 64, 28, 6);
+                ctx.fillStyle = 'rgba(255,255,255,0.06)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                ctx.font = '600 10px Inter, sans-serif';
+                ctx.fillStyle = 'rgba(255,255,255,0.8)';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(item, x, y);
+
+                // Arrow
+                if (i < items.length - 1) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + 36, y);
+                    ctx.lineTo(x + gap - 36, y);
+                    ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }, delay * 1000);
+        });
+    }
+
+    // ═══ SCENE TRANSITIONS ═══
+    function resetScene(idx) {
+        if (idx === 0) { countersAnimated = false; document.querySelectorAll('.counter-num').forEach(el => el.textContent = '0'); document.getElementById('ragFlow')?.classList.remove('show'); }
+        if (idx === 1) { pipelineProgress = 0; if (pipelineAnim) cancelAnimationFrame(pipelineAnim); drawPipeline(0); }
+        if (idx === 2) { /* D3 handles its own reset */ }
+        if (idx === 3) { barProgress = 0; if (barAnim) cancelAnimationFrame(barAnim); drawSimBars(0); }
+        if (idx === 4) { ctxProgress = 0; if (ctxAnim) cancelAnimationFrame(ctxAnim); drawContext(0); }
+        if (idx === 5) { document.getElementById('scene5').classList.remove('visible'); }
+    }
+
+    function activateScene(idx) {
+        if (idx === 0) { setTimeout(animateCounters, 350); setTimeout(() => document.getElementById('ragFlow')?.classList.add('show'), 200); }
+        if (idx === 1) { setTimeout(() => { pipelineProgress = 0; animatePipeline(); }, 200); }
+        if (idx === 2) { renderVectorSpace(); }
+        if (idx === 3) { setTimeout(() => { barProgress = 0; animateSimBars(); }, 200); }
+        if (idx === 4) { setTimeout(() => { ctxProgress = 0; animateContext(); }, 200); }
+        if (idx === 5) { document.getElementById('scene5').classList.add('visible'); drawPipelineSummary(); }
+    }
+
+    function transitionToScene(newIdx) {
+        if (newIdx === currentScene) return;
+        if (transitionTimer) clearTimeout(transitionTimer);
+        const oldEl = document.getElementById('scene' + currentScene);
+        const newEl = document.getElementById('scene' + newIdx);
+        resetScene(newIdx);
+        if (oldEl) { oldEl.classList.remove('visible'); oldEl.classList.add('exit'); }
+        transitionTimer = setTimeout(() => {
+            if (oldEl) oldEl.classList.remove('exit');
+            if (newEl) { newEl.classList.add('visible'); activateScene(newIdx); }
+            currentScene = newIdx;
+        }, 280);
+    }
+
+    // ═══ STEP OBSERVER ═══
+    const stepObs = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const idx = parseInt(entry.target.dataset.step);
+                STEPS.forEach(s => s.classList.remove('is-active'));
+                entry.target.classList.add('is-active');
+                DOTS.forEach(d => d.classList.remove('active'));
+                DOTS[idx]?.classList.add('active');
+                transitionToScene(idx);
+            }
+        });
+    }, { rootMargin: '-35% 0px -35% 0px', threshold: 0.15 });
+    STEPS.forEach(step => stepObs.observe(step));
+
+    // ═══ PROGRESS BAR ═══
+    window.addEventListener('scroll', () => {
+        requestAnimationFrame(() => {
+            const rect = SCROLLY.getBoundingClientRect();
+            const top = rect.top + window.scrollY;
+            const scrolled = window.scrollY - top;
+            const total = rect.height - window.innerHeight;
+            PROGRESS.style.width = Math.max(0, Math.min(100, (scrolled / total) * 100)) + '%';
+        });
+    }, { passive: true });
+
+    // ═══ SIDE DOTS CLICK ═══
+    DOTS.forEach(dot => {
+        dot.addEventListener('click', () => STEPS[parseInt(dot.dataset.idx)]?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+    });
+
+    // ═══ INIT ═══
+    activateScene(0);
+})();
+</script>
+</body>
+</html>
