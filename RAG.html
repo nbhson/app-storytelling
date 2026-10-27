@@ -643,19 +643,11 @@
     </div></div>
 </footer>
 
+<script src="scrolly-engine.js"></script>
 <script>
 (function() {
-    // ═══ GLOBALS ═══
-    const STEPS = document.querySelectorAll('.step');
-    const PROGRESS = document.getElementById('progressBar');
-    const SCROLLY = document.getElementById('scrolly');
-    const DOTS = document.querySelectorAll('.side-dot');
-    const SIDE_DOTS = document.getElementById('sideDots');
-    const HEADER = document.getElementById('siteHeader');
-    let currentScene = 0, transitionTimer = null;
-
     // ═══ PARTICLE BACKGROUND ═══
-    const particleCanvas = document.getElementById('particleCanvas');
+    const { animateCounters, resetCounters, observeSteps } = window.ScrollyEngine;
     const pCtx = particleCanvas.getContext('2d');
     let particles = [], pW, pH;
     const COLORS = ['#10b981','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#06b6d4'];
@@ -711,41 +703,11 @@
     resizeParticleCanvas(); initParticles(); drawParticles();
     window.addEventListener('resize', () => { resizeParticleCanvas(); initParticles(); });
 
-    // ═══ HEADER ═══
-    window.addEventListener('scroll', () => HEADER.classList.toggle('scrolled', window.scrollY > 20), { passive: true });
-
-    // ═══ SIDE DOTS ═══
-    const scrollyObs = new IntersectionObserver(([e]) => SIDE_DOTS.classList.toggle('visible', e.isIntersecting), { threshold: 0.05 });
-    scrollyObs.observe(SCROLLY);
-
-    // ═══ FAQ ═══
-    document.querySelectorAll('.faq-q').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const exp = btn.getAttribute('aria-expanded') === 'true';
-            btn.setAttribute('aria-expanded', String(!exp));
-            btn.nextElementSibling.classList.toggle('open');
-        });
-    });
-
-    // ═══ ARCHITECTURE ═══
+    // ═══ ARCHITECTURE ═══ (header/side-dots/FAQ/progress handled by scrolly-engine.js)
     const archObs = new IntersectionObserver(entries => {
         entries.forEach(e => { if (e.isIntersecting) e.target.querySelectorAll('.arch-box').forEach(b => b.classList.add('show')); });
     }, { threshold: 0.3 });
     archObs.observe(document.getElementById('archDiagram'));
-
-    // ═══ COUNTERS ═══
-    let countersAnimated = false;
-    function animateCounters() {
-        if (countersAnimated) return; countersAnimated = true;
-        document.querySelectorAll('.counter-num').forEach(el => {
-            const target = parseInt(el.dataset.target), start = performance.now();
-            (function tick(now) {
-                const p = Math.min((now - start) / 2200, 1);
-                el.textContent = Math.round(target * (1 - Math.pow(1 - p, 4))).toLocaleString();
-                if (p < 1) requestAnimationFrame(tick);
-            })(start);
-        });
-    }
 
     // ═══ SCENE 1: PIPELINE CANVAS ═══
     let pipelineAnim = null, pipelineProgress = 0;
@@ -1199,7 +1161,7 @@
 
     // ═══ SCENE TRANSITIONS ═══
     function resetScene(idx) {
-        if (idx === 0) { countersAnimated = false; document.querySelectorAll('.counter-num').forEach(el => el.textContent = '0'); document.getElementById('ragFlow')?.classList.remove('show'); }
+        if (idx === 0) { resetCounters(); document.getElementById('ragFlow')?.classList.remove('show'); }
         if (idx === 1) { pipelineProgress = 0; if (pipelineAnim) cancelAnimationFrame(pipelineAnim); drawPipeline(0); }
         if (idx === 2) { /* D3 handles its own reset */ }
         if (idx === 3) { barProgress = 0; if (barAnim) cancelAnimationFrame(barAnim); drawSimBars(0); }
@@ -1216,50 +1178,8 @@
         if (idx === 5) { document.getElementById('scene5').classList.add('visible'); drawPipelineSummary(); }
     }
 
-    function transitionToScene(newIdx) {
-        if (newIdx === currentScene) return;
-        if (transitionTimer) clearTimeout(transitionTimer);
-        const oldEl = document.getElementById('scene' + currentScene);
-        const newEl = document.getElementById('scene' + newIdx);
-        resetScene(newIdx);
-        if (oldEl) { oldEl.classList.remove('visible'); oldEl.classList.add('exit'); }
-        transitionTimer = setTimeout(() => {
-            if (oldEl) oldEl.classList.remove('exit');
-            if (newEl) { newEl.classList.add('visible'); activateScene(newIdx); }
-            currentScene = newIdx;
-        }, 280);
-    }
-
-    // ═══ STEP OBSERVER ═══
-    const stepObs = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const idx = parseInt(entry.target.dataset.step);
-                STEPS.forEach(s => s.classList.remove('is-active'));
-                entry.target.classList.add('is-active');
-                DOTS.forEach(d => d.classList.remove('active'));
-                DOTS[idx]?.classList.add('active');
-                transitionToScene(idx);
-            }
-        });
-    }, { rootMargin: '-35% 0px -35% 0px', threshold: 0.15 });
-    STEPS.forEach(step => stepObs.observe(step));
-
-    // ═══ PROGRESS BAR ═══
-    window.addEventListener('scroll', () => {
-        requestAnimationFrame(() => {
-            const rect = SCROLLY.getBoundingClientRect();
-            const top = rect.top + window.scrollY;
-            const scrolled = window.scrollY - top;
-            const total = rect.height - window.innerHeight;
-            PROGRESS.style.width = Math.max(0, Math.min(100, (scrolled / total) * 100)) + '%';
-        });
-    }, { passive: true });
-
-    // ═══ SIDE DOTS CLICK ═══
-    DOTS.forEach(dot => {
-        dot.addEventListener('click', () => STEPS[parseInt(dot.dataset.idx)]?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
-    });
+    // ═══ STEP OBSERVER + SCENE TRANSITIONS ═══
+    observeSteps({ resetScene, activateScene });
 
     // ═══ INIT ═══
     activateScene(0);
