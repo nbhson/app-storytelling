@@ -28,6 +28,43 @@
 - [x] Fix #1–#15
 - [x] Commit + self-review
 
+## Round 2 (2026-10-29) — enterprise upgrade
+
+### Findings (deep review đợt 2)
+
+| # | Severity | Vị trí | Vấn đề | Fix |
+|---|----------|--------|--------|-----|
+| R2-1 | MAJOR | flourish_clone.html:962,965 | Còn 2 script tracker của Flourish (`/js/script.js`, `/js/store-inbound-fields.js`) — 404 khi chạy standalone, đúng bản chất analytics | Remove |
+| R2-2 | MAJOR | Memory.html | `updateProgress` đăng ký 2 lần (2 scroll listener) → progress chạy gấp đôi cần thiết | Gộp 1 listener |
+| R2-3 | MAJOR | RAG.html | `drawPipelineSummary` dùng setTimeout không cancel → overdraw khi re-activate scene | Lưu timer ids, clear khi reset |
+| R2-4 | MAJOR | RAG.html | Nếu CDN d3 fail → `d3 is not defined` crash toàn bộ scene 2 + script | Guard `typeof d3` + thông báo fallback |
+| R2-5 | MINOR | engine + Memory.html | Progress chia cho 0 khi trang ngắn hơn viewport → NaN% | Guard `total > 0` |
+| R2-6 | MINOR | basic/RAG | `<a><button>` nested interactive — HTML invalid, a11y broke | Đổi thành `<a class="hero-cta">` |
+| R2-7 | MINOR | basic/RAG | Mobile toggle button không làm gì (no-op) | Implement mobile menu disclosure |
+| R2-8 | MINOR | Memory.html | `[id^='s']` selector brittle; thiếu reduced-motion cho pulse/spin/float | Scope selector + media query |
+| R2-9 | MINOR | flourish_clone | FAQ accordion toggle bằng inline style, không aria-expanded | Thêm aria-expanded |
+| R2-10 | MINOR | engine | hooks.resetScene/activateScene throw → vỡ scroll; dot active không aria-current | try/catch + aria-current |
+
+### Plan
+
+1. **Engine nâng cấp** (scrolly-engine.js): guard chia 0, try/catch hooks, `aria-current` cho dots, keyboard navigation (←/→/j/k giữa scenes), scene deep-linking (`#scene-N`, hỗ trợ load với hash), "Resume reading" chip (localStorage), announcer `aria-live`.
+2. **Features domain storytelling**:
+   - F1: Scene deep-link + nút "Copy link" trên từng step card.
+   - F2: Keyboard navigation giữa scenes.
+   - F3: Reading progress persistence + "Resume reading" chip.
+   - F4: Reader notes per scene (localStorage, textContent-only — XSS-safe) + print stylesheet để export PDF (kèm notes).
+3. **UI/UX**: design tokens (CSS variables spacing/color/type), focus-visible thống nhất, skip-link, scroll-margin cho anchor, prefers-reduced-motion đầy đủ, print styles.
+4. **Bug fixes**: R2-1…R2-10.
+5. **Verify**: node --check toàn bộ inline JS + engine; không có build step.
+
+### Trạng thái Round 2
+
+- [x] Deep review
+- [x] Plan
+- [x] Implement + features
+- [x] Verify
+- [x] Commit + self-review
+
 ## Review Log
 
 ### Vòng 1
