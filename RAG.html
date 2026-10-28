@@ -413,12 +413,12 @@
 
 <div class="progress-bar" id="progressBar"></div>
 <div class="side-dots" id="sideDots">
-    <button class="side-dot active" data-idx="0"></button>
-    <button class="side-dot" data-idx="1"></button>
-    <button class="side-dot" data-idx="2"></button>
-    <button class="side-dot" data-idx="3"></button>
-    <button class="side-dot" data-idx="4"></button>
-    <button class="side-dot" data-idx="5"></button>
+    <button class="side-dot active" data-idx="0" aria-label="Scene 1"></button>
+    <button class="side-dot" data-idx="1" aria-label="Scene 2"></button>
+    <button class="side-dot" data-idx="2" aria-label="Scene 3"></button>
+    <button class="side-dot" data-idx="3" aria-label="Scene 4"></button>
+    <button class="side-dot" data-idx="4" aria-label="Scene 5"></button>
+    <button class="side-dot" data-idx="5" aria-label="Scene 6"></button>
 </div>
 
 <section class="hero">
@@ -651,6 +651,9 @@
     const pCtx = particleCanvas.getContext('2d');
     let particles = [], pW, pH;
     const COLORS = ['#10b981','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#06b6d4'];
+    const REDUCED_MOTION = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    let particlesRunning = false;
+    let particleRafId = null;
 
     function resizeParticleCanvas() {
         const r = particleCanvas.parentElement.getBoundingClientRect();
@@ -669,6 +672,7 @@
         }
     }
     function drawParticles() {
+        if (!particlesRunning) { particleRafId = null; return; }
         pCtx.clearRect(0, 0, pW, pH);
         // Connections
         for (let i = 0; i < particles.length; i++) {
@@ -692,16 +696,36 @@
             if (p.y < 0 || p.y > pH) p.vy *= -1;
             pCtx.beginPath();
             pCtx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-            pCtx.fillStyle = p.color.replace(')', `,${p.alpha})`).replace('rgb', 'rgba').replace('#', '');
-            // Convert hex to rgba
+            // Hex -> rgba (dòng cũ build chuỗi rác với 3 replace liên tiếp — dead code)
             const hr = parseInt(p.color.slice(1,3),16), hg = parseInt(p.color.slice(3,5),16), hb = parseInt(p.color.slice(5,7),16);
             pCtx.fillStyle = `rgba(${hr},${hg},${hb},${p.alpha})`;
             pCtx.fill();
         });
-        requestAnimationFrame(drawParticles);
+        particleRafId = requestAnimationFrame(drawParticles);
     }
-    resizeParticleCanvas(); initParticles(); drawParticles();
-    window.addEventListener('resize', () => { resizeParticleCanvas(); initParticles(); });
+    function startParticles() {
+        if (REDUCED_MOTION || particlesRunning) return;
+        particlesRunning = true;
+        particleRafId = requestAnimationFrame(drawParticles);
+    }
+    function stopParticles() {
+        particlesRunning = false;
+        if (particleRafId) cancelAnimationFrame(particleRafId);
+        particleRafId = null;
+    }
+    resizeParticleCanvas(); initParticles();
+    if (!REDUCED_MOTION) {
+        // Chỉ chạy khi canvas visible — không đốt CPU khi off-screen/hidden tab
+        new IntersectionObserver((entries) => {
+            entries.forEach(e => { if (e.isIntersecting) startParticles(); else stopParticles(); });
+        }, { threshold: 0 }).observe(particleCanvas);
+    }
+    let particleResizeTimer = null;
+    window.addEventListener('resize', () => {
+        // Debounce — trước đây initParticles() chạy lại trên MỖI resize event
+        clearTimeout(particleResizeTimer);
+        particleResizeTimer = setTimeout(() => { resizeParticleCanvas(); initParticles(); }, 150);
+    }, { passive: true });
 
     // ═══ ARCHITECTURE ═══ (header/side-dots/FAQ/progress handled by scrolly-engine.js)
     const archObs = new IntersectionObserver(entries => {
@@ -719,12 +743,21 @@
         { label: 'Index', icon: '✅', color: '#f472b6' }
     ];
 
+    // Fit canvas theo parent CHỈ khi kích thước đổi — không realloc mỗi frame
+    function fitCanvas(canvas, maxW) {
+        const r = canvas.parentElement.getBoundingClientRect();
+        const w = Math.round(maxW ? Math.min(r.width, maxW) : r.width);
+        const h = Math.round(r.height);
+        if (canvas.width !== w || canvas.height !== h) {
+            canvas.width = w; canvas.height = h;
+        }
+    }
+
     function drawPipeline(progress) {
         const canvas = document.getElementById('pipelineCanvas');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
-        const r = canvas.parentElement.getBoundingClientRect();
-        canvas.width = r.width; canvas.height = r.height;
+        fitCanvas(canvas);
         const w = canvas.width, h = canvas.height;
         ctx.clearRect(0, 0, w, h);
 
@@ -816,8 +849,16 @@
         });
     }
 
-    function animatePipeline() {
-        pipelineProgress = Math.min(1, pipelineProgress + 0.008);
+    // Delta-time: tốc độ animation không phụ thuộc refresh rate màn hình
+    let lastFrameTs = 0;
+    function animStep(progress, dt, stepPerFrame) {
+        const clampedDt = Math.min(dt, 100); // chặn nhảy vọt khi tab bị treo
+        return Math.min(1, progress + stepPerFrame * (clampedDt / 16.7));
+    }
+    function animatePipeline(ts) {
+        const dt = lastFrameTs ? ts - lastFrameTs : 16.7;
+        lastFrameTs = ts;
+        pipelineProgress = animStep(pipelineProgress, dt, 0.008);
         drawPipeline(pipelineProgress);
         if (pipelineProgress < 1) pipelineAnim = requestAnimationFrame(animatePipeline);
     }
@@ -937,8 +978,7 @@
         const canvas = document.getElementById('simBarsCanvas');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
-        const r = canvas.parentElement.getBoundingClientRect();
-        canvas.width = r.width; canvas.height = r.height;
+        fitCanvas(canvas);
         const w = canvas.width, h = canvas.height;
         ctx.clearRect(0, 0, w, h);
 
@@ -997,8 +1037,10 @@
         });
     }
 
-    function animateSimBars() {
-        barProgress = Math.min(1, barProgress + 0.012);
+    function animateSimBars(ts) {
+        const dt = lastFrameTs ? ts - lastFrameTs : 16.7;
+        lastFrameTs = ts;
+        barProgress = animStep(barProgress, dt, 0.012);
         drawSimBars(barProgress);
         if (barProgress < 1) barAnim = requestAnimationFrame(animateSimBars);
     }
@@ -1010,8 +1052,7 @@
         const canvas = document.getElementById('ctxCanvas');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
-        const r = canvas.parentElement.getBoundingClientRect();
-        canvas.width = r.width; canvas.height = r.height;
+        fitCanvas(canvas);
         const w = canvas.width, h = canvas.height;
         ctx.clearRect(0, 0, w, h);
 
@@ -1101,8 +1142,10 @@
         }
     }
 
-    function animateContext() {
-        ctxProgress = Math.min(1, ctxProgress + 0.008);
+    function animateContext(ts) {
+        const dt = lastFrameTs ? ts - lastFrameTs : 16.7;
+        lastFrameTs = ts;
+        ctxProgress = animStep(ctxProgress, dt, 0.008);
         drawContext(ctxProgress);
         if (ctxProgress < 1) ctxAnim = requestAnimationFrame(animateContext);
     }
@@ -1112,8 +1155,8 @@
         const canvas = document.getElementById('pipelineSummaryCanvas');
         if (!canvas) return;
         const ctx = canvas.getContext('2d');
-        const r = canvas.parentElement.getBoundingClientRect();
-        canvas.width = Math.min(r.width, 440); canvas.height = 80;
+        fitCanvas(canvas, 440);
+        canvas.height = 80; // chiều cao cố định theo thiết kế
         const w = canvas.width, h = canvas.height;
         ctx.clearRect(0, 0, w, h);
 
@@ -1171,10 +1214,19 @@
 
     function activateScene(idx) {
         if (idx === 0) { setTimeout(animateCounters, 350); setTimeout(() => document.getElementById('ragFlow')?.classList.add('show'), 200); }
-        if (idx === 1) { setTimeout(() => { pipelineProgress = 0; animatePipeline(); }, 200); }
+        if (idx === 1) {
+            lastFrameTs = 0;
+            setTimeout(() => { pipelineProgress = 0; pipelineAnim = requestAnimationFrame(animatePipeline); }, 200);
+        }
         if (idx === 2) { renderVectorSpace(); }
-        if (idx === 3) { setTimeout(() => { barProgress = 0; animateSimBars(); }, 200); }
-        if (idx === 4) { setTimeout(() => { ctxProgress = 0; animateContext(); }, 200); }
+        if (idx === 3) {
+            lastFrameTs = 0;
+            setTimeout(() => { barProgress = 0; barAnim = requestAnimationFrame(animateSimBars); }, 200);
+        }
+        if (idx === 4) {
+            lastFrameTs = 0;
+            setTimeout(() => { ctxProgress = 0; ctxAnim = requestAnimationFrame(animateContext); }, 200);
+        }
         if (idx === 5) { document.getElementById('scene5').classList.add('visible'); drawPipelineSummary(); }
     }
 

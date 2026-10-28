@@ -467,19 +467,39 @@
 <script>
 document.addEventListener("DOMContentLoaded",function(){
 	var prog=document.getElementById("prog"),curEl=document.getElementById("cur");
-	var total=document.querySelectorAll("[id^='s']").length;
+	var scenes=document.querySelectorAll("[id^='s']");
+	var total=scenes.length;
 	document.getElementById("tot").textContent=total;
+	var lastCur=0;
+	function setCur(c){
+		if(c===lastCur)return;
+		lastCur=c;curEl.textContent=c;
+	}
+	setCur(1);
 
 	function updateProgress(){
 		var s=window.pageYOffset,d=document.documentElement.scrollHeight-window.innerHeight;
 		prog.style.width=Math.min(s/d*100,100)+"%";
-		var scenes=document.querySelectorAll("[id^='s']"),c=1;
-		for(var i=0;i<scenes.length;i++){if(scenes[i].getBoundingClientRect().top<=window.innerHeight*.5)c=i+1}
-		curEl.textContent=c;
 	}
 
-	// Fade-up observer
-	var fo=new IntersectionObserver(function(e){e.forEach(function(en){if(en.isIntersecting){en.target.style.opacity="1";en.target.style.transform="translateY(0)"}})},{threshold:.2});
+	// IntersectionObserver thay getBoundingClientRect mỗi scroll event — tránh layout thrash
+	var sceneObs=new IntersectionObserver(function(entries){
+		entries.forEach(function(en){
+			if(en.isIntersecting){
+				var c=en.target.getAttribute("data-c")||en.target.id.replace("s","");
+				setCur(parseInt(c));
+			}
+		});
+	},{threshold:.5});
+	scenes.forEach(function(sec){sceneObs.observe(sec);});
+
+	window.addEventListener("scroll",function(){
+		requestAnimationFrame(updateProgress);
+	},{passive:true});
+	updateProgress();
+
+	// Fade-up observer — unobserve sau khi trigger để giải phóng reference
+	var fo=new IntersectionObserver(function(e){e.forEach(function(en){if(en.isIntersecting){en.target.style.opacity="1";en.target.style.transform="translateY(0)";fo.unobserve(en.target)}})},{threshold:.2});
 	document.querySelectorAll("[data-a]").forEach(function(el){el.style.opacity="0";el.style.transform="translateY(30px)";el.style.transition="opacity .7s ease,transform .7s ease";fo.observe(el)});
 
 	// Scrolly section handler
