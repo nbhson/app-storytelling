@@ -664,7 +664,7 @@
 <div class="faq-container">
 <h2>Frequently asked questions</h2>
 
-  <button type="button" class="collapsible" id="faq1" data-track="toggle" data-section="faq" data-component="accordion" data-component-id="accordion_item_1">What is scrollytelling?</button>
+  <button type="button" class="collapsible" id="faq1" aria-expanded="false" data-section="faq" data-component-id="accordion_item_1">What is scrollytelling?</button>
   <div class="collapsible-content">
       <p> 
 Scrollytelling is a storytelling technique where visualizations, text, and media change dynamically as you scroll. In Flourish, you can combine charts, maps, and narrative slides into a seamless, interactive experience without coding.</p>
@@ -682,7 +682,7 @@ Scrollytelling is a storytelling technique where visualizations, text, and media
    
 
 
-  <button type="button" class="collapsible" id="faq2" data-track="toggle" data-section="faq" data-component="accordion" data-component-id="accordion_item_2">Who can use scrollytelling in Flourish?</button>
+  <button type="button" class="collapsible" id="faq2" aria-expanded="false" data-section="faq" data-component-id="accordion_item_2">Who can use scrollytelling in Flourish?</button>
   <div class="collapsible-content">
       <p> 
 Scrollytelling is available for users on our <strong><a href="https://flourish.studio/pricing" target="_blank">Enterprise and Publisher plans</a></strong>. This feature will automatically be available in your account – simply click on the <a href="https://helpcenter.flourish.studio/hc/en-us/articles/8761522702991-How-to-create-a-scrolly-using-the-story-editor" target="_blank">story editor</a> and start creating. If you’d like to unlock the full power of the Flourish platform and get access to Flourish scrollytelling, <a href="https://flourish.studio/talk-to-us/" target="_blank">get in touch</a> with our sales team.</p>
@@ -700,7 +700,7 @@ Scrollytelling is available for users on our <strong><a href="https://flourish.s
    
 
 
-  <button type="button" class="collapsible" id="faq3" data-track="toggle" data-section="faq" data-component="accordion" data-component-id="accordion_item_3">How do I create a scrollytelling project in Flourish?</button>
+  <button type="button" class="collapsible" id="faq3" aria-expanded="false" data-section="faq" data-component-id="accordion_item_3">How do I create a scrollytelling project in Flourish?</button>
   <div class="collapsible-content">
       <p> 
 Publisher and Enterprise customers can use the <a href="https://helpcenter.flourish.studio/hc/en-us/articles/8761522702991-How-to-create-a-scrolly-using-the-story-editor" target="_blank">story editor</a> to build engaging, scroll-based stories — no code required.
@@ -720,7 +720,7 @@ Head to the Story editor and add your slides and charts as usual. Once your visu
    
 
 
-  <button type="button" class="collapsible" id="faq4" data-track="toggle" data-section="faq" data-component="accordion" data-component-id="accordion_item_4">Can I embed a Flourish scrollytelling project on my website?</button>
+  <button type="button" class="collapsible" id="faq4" aria-expanded="false" data-section="faq" data-component-id="accordion_item_4">Can I embed a Flourish scrollytelling project on my website?</button>
   <div class="collapsible-content">
       <p> 
 Yes! Every published story generates <a href="https://helpcenter.flourish.studio/hc/en-us/articles/8761565550607-Exporting-publishing-embedding-and-sharing" target="_blank">an embed code</a> that you can easily paste into your CMS or website builder. Scrollytelling captions automatically adopt your website’s font, ensuring a seamless look and feel.</p>
@@ -738,7 +738,7 @@ Yes! Every published story generates <a href="https://helpcenter.flourish.studio
    
 
 
-  <button type="button" class="collapsible" id="faq5" data-track="toggle" data-section="faq" data-component="accordion" data-component-id="accordion_item_5">Can I include text, images, or videos in my story?</button>
+  <button type="button" class="collapsible" id="faq5" aria-expanded="false" data-section="faq" data-component-id="accordion_item_5">Can I include text, images, or videos in my story?</button>
   <div class="collapsible-content">
       <p> 
 Absolutely! Each slide can feature text blocks, images, videos, or visualizations – making it easy to blend narrative and data in a single flow.</p>
@@ -959,10 +959,8 @@ Absolutely! Each slide can feature text blocks, images, videos, or visualization
 </div>
 
 	
-<script src="/js/script.js?8ef971d4e79a3fce63ed22963eea4112"></script>
 
 	
-<script src="/js/store-inbound-fields.js?272e3c837830d9f746a5abf71a642972"></script>
 
 
 	
@@ -975,9 +973,10 @@ document.addEventListener("DOMContentLoaded", function() {
   var buttons = document.querySelectorAll(".collapsible");
   buttons.forEach(function(button) {
     button.addEventListener("click", function() {
-      this.classList.toggle("active");
+      var open = this.classList.toggle("active");
+      this.setAttribute("aria-expanded", String(open));
       var content = this.nextElementSibling;
-      if (content) content.style.display = content.style.display === "block" ? "none" : "block";
+      if (content) content.style.display = open ? "block" : "none";
     });
   });
 
