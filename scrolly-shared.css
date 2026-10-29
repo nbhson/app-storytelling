@@ -40,6 +40,10 @@
     overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
 }
 
+/* ─── Anchor jumps dưới fixed header ─── */
+html { scroll-behavior: smooth; scroll-padding-top: 96px; }
+[id] { scroll-margin-top: 96px; }
+
 /* ─── Reader progress token (dùng cho header ring / label) ─── */
 :root { --read-progress: 0%; }
 
@@ -143,4 +147,5 @@
 /* ─── Reduced motion: tắt animation của widget engine ─── */
 @media (prefers-reduced-motion: reduce) {
     .scrolly-resume { transition: none; }
+    html { scroll-behavior: auto; }
 }

@@ -44,7 +44,10 @@
     }
 
     function init() {
-        var cards = document.querySelectorAll('.step-card, [data-step], .scrolly-step');
+        // Ưu tiên .step-card (basic/RAG: .step[data-step] là container chứa
+        // .step-card — chọn cả hai sẽ inject 2 lần). Fallback: .scrolly-step (Memory).
+        var cards = document.querySelectorAll('.step-card');
+        if (!cards.length) cards = document.querySelectorAll('.scrolly-step');
         if (!cards.length) return;
 
         Array.prototype.forEach.call(cards, function(card, cardIdx) {
