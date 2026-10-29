@@ -82,6 +82,8 @@
 | `d48656d` | security+fix(flourish): strip 2 tracker scripts còn sót, aria-expanded FAQ (R2-1, R2-9) |
 | `acada70` | fix: R2-2…R2-8 (scroll listener đôi, timer leak, d3 guard, hero CTA, mobile nav, Memory selectors + reduced-motion) |
 | `1649498` | fix(notes): chống double injection, anchor scroll offsets |
+| `6c593bb` | docs: kết quả Round 2 |
+| `ae2e782` | fix(flourish): link shared CSS — `.sr-only` announcer không có rule CSS nên hiển thị lộ ra màn hình |
 
 **Verify:** `node --check` pass cho scrolly-engine.js, scrolly-notes.js và toàn bộ
 inline script trong 4 trang (JSON-LD được loại trừ). Smoke test headless (jsdom +
@@ -102,7 +104,9 @@ step / test suite cấu hình sẵn.
 **Rủi ro còn lại:** Memory.html dùng framework riêng (không qua scrolly-engine)
 nên chưa có resume chip/keyboard nav — chỉ có notes + shared CSS. Print styles
 chỉ verify được cấu trúc DOM (không in thử thật). flourish_clone không gắn notes
-(vì giữ nguyên bản chất "clone trang marketing").
+(vì giữ nguyên bản chất "clone trang marketing"); ảnh `/images/...` và canonical
+trỏ tới flourish.studio sẽ 404/không hợp khi chạy standalone — cosmetic, ngoài
+phạm vi.
 
 ## Review Log
 
