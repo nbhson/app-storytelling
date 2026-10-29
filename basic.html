@@ -7,6 +7,7 @@
     <meta property="og:title" content="Scrollytelling | Flourish">
     <meta property="og:description" content="Create immersive scrollytelling experiences with Flourish.">
     <title>Scrollytelling | Flourish Clone</title>
+    <link rel="stylesheet" href="scrolly-shared.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -595,6 +596,8 @@
 </head>
 <body>
 
+<a class="skip-link" href="#scrolly">Skip to story</a>
+
 <!-- Announcement Banner -->
 <aside class="ann-banner" role="region" aria-label="Announcement">
     <span class="ann-banner__label">Describe the change.</span>
@@ -1009,9 +1012,10 @@
 
 <!-- ====== SCROLLYTELLING ENGINE (shared) ====== -->
 <script src="scrolly-engine.js"></script>
+<script src="scrolly-notes.js" defer></script>
 <script>
 (function() {
-    const { animateCounters, resetCounters, observeSteps } = window.ScrollyEngine;
+    const { animateCounters, resetCounters, observeSteps, showResumeChip, jumpToHashScene } = window.ScrollyEngine;
     const BG_LAYERS = document.querySelectorAll('.canvas-bg-layer');
 
     // ─── Reset scene visuals ───
@@ -1069,6 +1073,8 @@
     // ─── Init ───
     activateScene(0);
     crossfadeBg(0);
+    showResumeChip({});
+    jumpToHashScene({});
 })();
 </script>
 </body>

@@ -7,6 +7,7 @@
     <meta property="og:title" content="RAG Explained | Interactive Presentation">
     <meta property="og:description" content="An immersive scrollytelling journey through Retrieval-Augmented Generation.">
     <title>RAG Explained | Interactive Presentation</title>
+    <link rel="stylesheet" href="scrolly-shared.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -394,6 +395,8 @@
 </head>
 <body>
 
+<a class="skip-link" href="#scrolly">Skip to story</a>
+
 <header class="site-header" id="siteHeader">
     <div class="row-inner">
         <a href="#" class="logo"><span class="logo-icon">R</span><span>RAG<span style="font-weight:400;color:#6b7280">Explained</span></span></a>
@@ -644,10 +647,11 @@
 </footer>
 
 <script src="scrolly-engine.js"></script>
+<script src="scrolly-notes.js" defer></script>
 <script>
 (function() {
     // ═══ PARTICLE BACKGROUND ═══
-    const { animateCounters, resetCounters, observeSteps } = window.ScrollyEngine;
+    const { animateCounters, resetCounters, observeSteps, showResumeChip, jumpToHashScene } = window.ScrollyEngine;
     const pCtx = particleCanvas.getContext('2d');
     let particles = [], pW, pH;
     const COLORS = ['#10b981','#3b82f6','#8b5cf6','#f59e0b','#ef4444','#06b6d4'];
@@ -1235,6 +1239,8 @@
 
     // ═══ INIT ═══
     activateScene(0);
+    showResumeChip({});
+    jumpToHashScene({});
 })();
 </script>
 </body>
