@@ -73,6 +73,34 @@
             scrollyObs.observe(SCROLLY);
         }
 
+        // ─── Mobile nav disclosure (R2-7: toggle button từng là no-op) ───
+        var mobileToggle = document.querySelector('.mobile-toggle');
+        var nav = document.querySelector('.main-nav');
+        if (mobileToggle && nav) {
+            if (!mobileToggle.id) mobileToggle.id = 'mobileToggle';
+            if (!nav.id) nav.id = 'mainNav';
+            mobileToggle.setAttribute('aria-expanded', 'false');
+            mobileToggle.setAttribute('aria-controls', nav.id);
+            mobileToggle.addEventListener('click', function() {
+                var open = document.body.classList.toggle('nav-open');
+                mobileToggle.setAttribute('aria-expanded', String(open));
+            });
+            // Đóng menu khi chọn link hoặc nhấn Escape
+            nav.addEventListener('click', function(e) {
+                if (e.target.closest('a')) {
+                    document.body.classList.remove('nav-open');
+                    mobileToggle.setAttribute('aria-expanded', 'false');
+                }
+            });
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && document.body.classList.contains('nav-open')) {
+                    document.body.classList.remove('nav-open');
+                    mobileToggle.setAttribute('aria-expanded', 'false');
+                    mobileToggle.focus();
+                }
+            });
+        }
+
         // ─── FAQ ───
         document.querySelectorAll('.faq-q').forEach(function(btn) {
             btn.addEventListener('click', function() {

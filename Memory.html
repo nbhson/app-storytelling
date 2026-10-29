@@ -201,6 +201,13 @@
 			.pipeline-wrap{flex-wrap:wrap}
 		}
 	</style>
+	<!-- Reduced motion: tắt pulse/spin/float/bounce trang trí -->
+	<style>
+		@media (prefers-reduced-motion: reduce){
+			.bg-p,.vis-or,.refl-ring,.pulse-dot,[style*="bounce"],[style*="float"]{animation:none !important}
+			html{scroll-behavior:auto}
+		}
+	</style>
 </head>
 <body>
 
@@ -471,7 +478,7 @@
 <script>
 document.addEventListener("DOMContentLoaded",function(){
 	var prog=document.getElementById("prog"),curEl=document.getElementById("cur");
-	var scenes=document.querySelectorAll("[id^='s']");
+	var scenes=Array.prototype.filter.call(document.querySelectorAll("[id]"),function(el){return /^s\d+$/.test(el.id)});
 	var total=scenes.length;
 	document.getElementById("tot").textContent=total;
 	var lastCur=0;
@@ -483,7 +490,7 @@ document.addEventListener("DOMContentLoaded",function(){
 
 	function updateProgress(){
 		var s=window.pageYOffset,d=document.documentElement.scrollHeight-window.innerHeight;
-		prog.style.width=Math.min(s/d*100,100)+"%";
+		prog.style.width=Math.min(d>0?s/d*100:100,100)+"%";
 	}
 
 	// IntersectionObserver thay getBoundingClientRect mỗi scroll event — tránh layout thrash
@@ -497,8 +504,11 @@ document.addEventListener("DOMContentLoaded",function(){
 	},{threshold:.5});
 	scenes.forEach(function(sec){sceneObs.observe(sec);});
 
+	// 1 scroll listener duy nhất — rAF-throttle progress (tránh đăng ký trùng)
+	var scrollScheduled=false;
 	window.addEventListener("scroll",function(){
-		requestAnimationFrame(updateProgress);
+		if(scrollScheduled)return;scrollScheduled=true;
+		requestAnimationFrame(function(){scrollScheduled=false;updateProgress()});
 	},{passive:true});
 	updateProgress();
 
@@ -615,9 +625,6 @@ document.addEventListener("DOMContentLoaded",function(){
 	var hp=document.getElementById("hero-p");
 	if(hp){for(var i=0;i<30;i++){var p=document.createElement("div");p.className="bg-p";p.style.cssText="left:"+Math.random()*100+"%;top:"+Math.random()*100+"%;opacity:"+(Math.random()*.5+.1)+";width:"+(Math.random()*3+2)+"px;height:"+(Math.random()*3+2)+"px;animation:float "+(Math.random()*10+10)+"s ease-in-out infinite "+(Math.random()*5)+"s";hp.appendChild(p)}
 		var st=document.createElement("style");st.textContent="@keyframes float{0%,100%{transform:translateY(0) translateX(0)}25%{transform:translateY(-20px) translateX(10px)}50%{transform:translateY(-10px) translateX(-10px)}75%{transform:translateY(-30px) translateX(5px)}}@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(10px)}}";document.head.appendChild(st)}
-
-	window.addEventListener("scroll",function(){requestAnimationFrame(updateProgress)});
-	updateProgress();
 });
 </script>
 </body>

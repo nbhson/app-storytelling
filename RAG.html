@@ -105,7 +105,7 @@
         }
         .hero-cta {
             display: inline-flex; align-items: center; gap: 10px;
-            padding: 14px 36px; border-radius: 12px;
+            padding: 14px 36px; border-radius: 12px; text-decoration: none;
             background: linear-gradient(135deg, #10b981, #059669);
             color: #fff; font-weight: 600; font-size: 16px; border: none; cursor: pointer;
             transition: all .25s; font-family: inherit; position: relative;
@@ -429,7 +429,7 @@
         <div class="hero-badge"><span class="hero-badge__dot"></span> Interactive Deep Dive</div>
         <h1><span class="mono">RAG</span> Explained</h1>
         <p>A visual journey through Retrieval-Augmented Generation — how AI systems retrieve knowledge and generate accurate, grounded answers.</p>
-        <a href="#scrolly"><button class="hero-cta">Start scrolling ↓</button></a>
+        <a class="hero-cta" href="#scrolly">Start scrolling ↓</a>
         <div class="hero-scroll-hint"><div class="scroll-mouse"><div class="scroll-wheel"></div></div>Scroll to explore</div>
     </div>
 </section>
@@ -871,6 +871,23 @@
     let vectorSim = null, vectorRendered = false;
     function renderVectorSpace() {
         if (vectorRendered) return;
+        // Guard: nếu CDN d3 fail (offline/adblock) — không crash toàn bộ script
+        if (typeof d3 === 'undefined') {
+            vectorRendered = true;
+            const host = document.getElementById('vectorSvg');
+            if (host) {
+                const msg = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                msg.setAttribute('x', '50%');
+                msg.setAttribute('y', '50%');
+                msg.setAttribute('text-anchor', 'middle');
+                msg.setAttribute('fill', '#9ca3af');
+                msg.setAttribute('font-size', '12');
+                msg.textContent = 'Visualization unavailable — d3 failed to load.';
+                host.appendChild(msg);
+            }
+            console.warn('[scrolly] d3 unavailable — vector space skipped.');
+            return;
+        }
         vectorRendered = true;
         const svg = d3.select('#vectorSvg');
         const w = 440, h = 280;
@@ -1155,9 +1172,13 @@
     }
 
     // ═══ SCENE 5: PIPELINE SUMMARY ═══
+    let pipelineSummaryTimers = [];
     function drawPipelineSummary() {
         const canvas = document.getElementById('pipelineSummaryCanvas');
         if (!canvas) return;
+        // Cancel các timer của lần vẽ trước — tránh overdraw khi re-activate scene
+        pipelineSummaryTimers.forEach(clearTimeout);
+        pipelineSummaryTimers = [];
         const ctx = canvas.getContext('2d');
         fitCanvas(canvas, 440);
         canvas.height = 80; // chiều cao cố định theo thiết kế
@@ -1171,8 +1192,8 @@
         items.forEach((item, i) => {
             const x = gap * (i + 1);
             const delay = i * 0.12;
-            // Simple fade in with setTimeout
-            setTimeout(() => {
+            // Fade in với setTimeout — lưu id để cancel khi scene reset
+            pipelineSummaryTimers.push(setTimeout(() => {
                 ctx.save();
                 ctx.globalAlpha = 1;
 
@@ -1202,7 +1223,7 @@
                 }
 
                 ctx.restore();
-            }, delay * 1000);
+            }, delay * 1000));
         });
     }
 
@@ -1213,7 +1234,11 @@
         if (idx === 2) { /* D3 handles its own reset */ }
         if (idx === 3) { barProgress = 0; if (barAnim) cancelAnimationFrame(barAnim); drawSimBars(0); }
         if (idx === 4) { ctxProgress = 0; if (ctxAnim) cancelAnimationFrame(ctxAnim); drawContext(0); }
-        if (idx === 5) { document.getElementById('scene5').classList.remove('visible'); }
+        if (idx === 5) {
+            pipelineSummaryTimers.forEach(clearTimeout);
+            pipelineSummaryTimers = [];
+            document.getElementById('scene5').classList.remove('visible');
+        }
     }
 
     function activateScene(idx) {
