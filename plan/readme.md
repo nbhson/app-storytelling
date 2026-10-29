@@ -65,6 +65,45 @@
 - [x] Verify
 - [x] Commit + self-review
 
+### Round 2 — kết quả thực hiện (2026-10-29)
+
+> Ghi chú: phiên Round 2 trước bị gián đoạn giữa chừng — để lại 2 file
+> untracked (`scrolly-notes.js`, `scrolly-shared.css`) chưa wire vào trang nào,
+> trong đó `scrolly-notes.js` còn 2 bug thật (khai báo `syncHasNote` trùng —
+> định nghĩa sau đè định nghĩa trước làm mất update hint; và `JSON.parse`
+> trên giá trị lưu dạng raw nên note không bao giờ load lại). Đã sửa, hoàn thiện
+> và commit như một phần của Round 2.
+
+**Commits (local, branch main):**
+
+| Hash | Nội dung |
+|------|----------|
+| `3292e90` | feat(ui): wire notes/copy-link/shared design layer/skip-links + activate resume & deep-link |
+| `d48656d` | security+fix(flourish): strip 2 tracker scripts còn sót, aria-expanded FAQ (R2-1, R2-9) |
+| `acada70` | fix: R2-2…R2-8 (scroll listener đôi, timer leak, d3 guard, hero CTA, mobile nav, Memory selectors + reduced-motion) |
+| `1649498` | fix(notes): chống double injection, anchor scroll offsets |
+
+**Verify:** `node --check` pass cho scrolly-engine.js, scrolly-notes.js và toàn bộ
+inline script trong 4 trang (JSON-LD được loại trừ). Smoke test headless (jsdom +
+polyfill IntersectionObserver) trên cả 3 trang engine: widgets inject đúng số
+lượng (6/6, 6/6, 9/9), note save/load round-trip qua localStorage OK, print node
+chỉ render qua textContent (payload `<img onerror>` không xuất hiện trong DOM),
+mobile nav open/close, resume chip inject, không runtime error. Không có build
+step / test suite cấu hình sẵn.
+
+**Tính năng Round 2 đã ship:**
+1. Scene deep-linking (`#scene-N`) + nút "Copy link" trên từng scene card.
+2. Reader notes per scene (localStorage, XSS-safe textContent-only).
+3. Reading-progress persistence + "Resume scene N" chip.
+4. Keyboard navigation (←/→/j/k) + announcer `aria-live`.
+5. Export PDF/print kèm ghi chú (@media print trong scrolly-shared.css).
+6. Mobile nav disclosure hoạt động thật (trước là no-op).
+
+**Rủi ro còn lại:** Memory.html dùng framework riêng (không qua scrolly-engine)
+nên chưa có resume chip/keyboard nav — chỉ có notes + shared CSS. Print styles
+chỉ verify được cấu trúc DOM (không in thử thật). flourish_clone không gắn notes
+(vì giữ nguyên bản chất "clone trang marketing").
+
 ## Review Log
 
 ### Vòng 1
