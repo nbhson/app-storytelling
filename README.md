@@ -1,5 +1,7 @@
 # Storytelling Demos
 
+[![CI](https://github.com/nbhson/app-storytelling/actions/workflows/ci.yml/badge.svg)](https://github.com/nbhson/app-storytelling/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 Bộ 4 trang scrollytelling demo (vanilla HTML/CSS/JS, không build step):
 
 | File | Mô tả |
