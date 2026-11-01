@@ -14,21 +14,21 @@
     var pageKey = (location.pathname.split('/').pop() || 'index').replace(/[^\w.-]/g, '');
 
     function readStorage() {
-        try { return window.localStorage; } catch (err) { return null; }
+        try { return window.localStorage; } catch { return null; }
     }
     function loadNote(key) {
         var ls = readStorage();
         if (!ls) return '';
         try { return ls.getItem('scrolly-notes:' + pageKey + ':' + key) || ''; }
-        catch (err) { return ''; }
+        catch { return ''; }
     }
     function saveNote(key, text) {
         var ls = readStorage();
         if (!ls) return;
-        try { ls.setItem('scrolly-notes:' + pageKey + ':' + key, text); } catch (err) { /* private mode / quota */ }
+        try { ls.setItem('scrolly-notes:' + pageKey + ':' + key, text); } catch { /* private mode / quota */ }
         try {
             document.dispatchEvent(new CustomEvent('scrolly:notes-saved', { detail: { scene: key } }));
-        } catch (err) { /* CustomEvent không khả dụng — bỏ qua */ }
+        } catch { /* CustomEvent không khả dụng — bỏ qua */ }
     }
 
     function sceneNumber(sceneKey) {
@@ -165,7 +165,7 @@
         try {
             if (document.execCommand('copy')) { done(); }
             else { flash(btn, '#scene'); }
-        } catch (err) { flash(btn, '#scene'); }
+        } catch { flash(btn, '#scene'); }
         document.body.removeChild(ta);
     }
 

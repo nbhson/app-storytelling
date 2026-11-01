@@ -2,22 +2,24 @@
 
 [![CI](https://github.com/nbhson/app-storytelling/actions/workflows/ci.yml/badge.svg)](https://github.com/nbhson/app-storytelling/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-Bộ 4 trang scrollytelling demo (vanilla HTML/CSS/JS, không build step):
+Bộ 3 trang scrollytelling demo (vanilla HTML/CSS/JS, không build step):
 
 | File | Mô tả |
 |------|-------|
 | `basic.html` | Demo scrollytelling gốc — 6 scenes với canvas animation |
 | `RAG.html` | "RAG Explained" — visual deep dive về Retrieval-Augmented Generation (particles + D3 force + canvas pipeline) |
 | `Memory.html` | "Memory Engineering" — scrollytelling presentation về AI memory |
-| `flourish_clone.html` | Bản clone trang Flourish.studio (đã strip toàn bộ analytics/tracker của trang gốc) |
 | `scrolly-engine.js` | Engine dùng chung: scene transition, progress bar, side dots, FAQ accordion, counters |
 
 ## Chạy local
 
 ```bash
 python3 -m http.server 8080
-# mở http://localhost:8080/basic.html (hoặc RAG.html, Memory.html, flourish_clone.html)
+# mở http://localhost:8080/basic.html (hoặc RAG.html, Memory.html)
 ```
+
+> Lưu ý: `flourish_clone.html` (bản copy trang Flourish.studio) đã bị xoá khỏi repo
+> vì copy verbatim nội dung/branding của một dịch vụ thương mại. Xem git history nếu cần.
 
 ## Kiến trúc engine (scrolly-engine.js)
 

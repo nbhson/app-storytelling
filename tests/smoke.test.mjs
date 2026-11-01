@@ -6,7 +6,7 @@ import path from "node:path";
 
 const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 
-const htmlFiles = ["index.html", "basic.html", "Memory.html", "RAG.html", "flourish_clone.html", "options.html", "popup.html"]
+const htmlFiles = ["index.html", "basic.html", "Memory.html", "RAG.html"]
   .filter((f) => existsSync(path.join(root, f)));
 
 test("có ít nhất một file HTML", () => {

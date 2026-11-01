@@ -174,7 +174,7 @@
                 });
                 var heading = newEl ? newEl.querySelector('h3') : null;
                 announce('Scene ' + (newIdx + 1) + ' of ' + STEPS.length + (heading ? ': ' + heading.textContent : ''));
-                try { history.replaceState(null, '', '#scene-' + (newIdx + 1)); } catch (err) { /* file:// hoặc sandbox — bỏ qua */ }
+                try { history.replaceState(null, '', '#scene-' + (newIdx + 1)); } catch { /* file:// hoặc sandbox — bỏ qua */ }
                 saveResume(newIdx);
             }, 280);
         }
@@ -227,14 +227,14 @@
 
         // ─── Round 2: Reading progress persistence + resume chip ───
         function readStorage() {
-            try { return window.localStorage; } catch (err) { return null; }
+            try { return window.localStorage; } catch { return null; }
         }
         function saveResume(idx) {
             var ls = readStorage();
             if (!ls) return;
             try {
                 ls.setItem(STORAGE_KEY, JSON.stringify({ scene: idx, page: location.pathname.split('/').pop() || 'index', t: Date.now() }));
-            } catch (err) { /* private mode / quota — bỏ qua */ }
+            } catch { /* private mode / quota — bỏ qua */ }
         }
         function getResume() {
             var ls = readStorage();
@@ -243,11 +243,10 @@
                 var data = JSON.parse(ls.getItem(STORAGE_KEY) || 'null');
                 if (!data || typeof data.scene !== 'number') return null;
                 return data;
-            } catch (err) { return null; }
+            } catch { return null; }
         }
 
-        var resumeChip = null;
-        function showResumeChip(hooks) {
+        function showResumeChip(_hooks) {
             var saved = getResume();
             if (!saved || saved.scene < 1 || saved.scene >= STEPS.length) return;
             if (document.getElementById('scrolly-resume')) return;
@@ -262,7 +261,6 @@
                 chip.remove();
             });
             document.body.appendChild(chip);
-            resumeChip = chip;
             setTimeout(function() { if (chip.isConnected) chip.classList.add('shown'); }, 900);
             // Tự ẩn sau 9s nếu user không click
             setTimeout(function() {
@@ -274,7 +272,7 @@
         }
 
         // ─── Deep-linking: hỗ trợ mở trang với #scene-N ───
-        function jumpToHashScene(hooks) {
+        function jumpToHashScene(_hooks) {
             var m = /^#scene-(\d+)$/.exec(location.hash || '');
             if (!m) return;
             var idx = parseInt(m[1], 10) - 1;
